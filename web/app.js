@@ -311,7 +311,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload til varsel og lys-blink.",
+        help: "Bruk Change node når du kun skal sette faste felt i msg.payload (f.eks. title, message og data). Bruk Function node hvis du må lage dynamisk tekst eller kombinere flere felt fra msg/data. Her kan du bygge et varsel-objekt til notify og et eget blink-objekt (f.eks. msg.blink med entity_id og flash) som Action-nodene bruker videre.",
       },
       {
         label: "Action",
