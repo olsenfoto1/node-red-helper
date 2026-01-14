@@ -11,10 +11,10 @@ En enkel, selvhostet katalog med Node-RED oppskrifter og copy/paste-kode for Hom
 ## Kom i gang lokalt
 
 ```bash
-python3 -m http.server --directory web 8080
+python3 -m http.server --directory web 8123
 ```
 
-Åpne `http://localhost:8080`.
+Åpne `http://localhost:8123`.
 
 ## Docker (ZimaOS / Portainer)
 
@@ -27,7 +27,7 @@ docker build -t node-red-helper .
 Kjør:
 
 ```bash
-docker run --rm -p 8080:80 node-red-helper
+docker run --rm -p 8123:80 node-red-helper
 ```
 
 Eller bruk compose:
@@ -36,7 +36,7 @@ Eller bruk compose:
 docker compose up --build
 ```
 
-Åpne `http://<server-ip>:8080`.
+Åpne `http://<server-ip>:8123`.
 
 ## Legg til flere oppskrifter
 
