@@ -16,7 +16,7 @@ const recipes = [
       },
       {
         label: "Action",
-        help: "Sett service til notify.mobile_app_<telefon>. Velg Data type: JSONata (Expression) og skriv payload for å sende msg.payload fra Function-noden.",
+        help: "Sett service til notify.mobile_app_<telefon>. Velg Data type: JSONata (Expression) – ikke JSON – og skriv msg.payload i feltet for å sende innholdet fra Function-noden.",
       },
       {
         label: "Events: all",
@@ -359,6 +359,15 @@ function showFlowHelp(index) {
   });
 }
 
+function showFlowHelpPlaceholder() {
+  detailFlowHelp.innerHTML = `
+    <p class="muted">Klikk på en node for å se hjelpetekst.</p>
+  `;
+  [...detailFlow.querySelectorAll(".flow-node")].forEach((node) => {
+    node.classList.remove("active");
+  });
+}
+
 function renderFields(fields) {
   detailFields.innerHTML = "";
   fields.forEach((field) => {
@@ -398,7 +407,7 @@ function showDetail(recipeId) {
   detailSummary.textContent = recipe.summary;
   detailCode.textContent = recipe.code;
   renderFlowDiagram(recipe.flow);
-  showFlowHelp(0);
+  showFlowHelpPlaceholder();
   renderList(recipe.nextNodes, detailNext, "li");
   renderFields(recipe.fields);
   renderTroubleshoot(recipe.troubleshoot);
