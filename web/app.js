@@ -260,6 +260,7 @@ const detailCode = document.getElementById("detailCode");
 const detailNext = document.getElementById("detailNext");
 const detailFields = document.getElementById("detailFields");
 const detailTroubleshoot = document.getElementById("detailTroubleshoot");
+const toast = document.getElementById("toast");
 let activeFlow = [];
 let activeRecipe = null;
 
@@ -406,18 +407,61 @@ function showDetail(recipeId) {
   detail.scrollIntoView({ behavior: "smooth" });
 }
 
-function copyText(text) {
-  if (navigator.clipboard?.writeText && window.isSecureContext) {
-    navigator.clipboard.writeText(text).catch(() => {
-      window.prompt("Kopier manuelt:", text);
-    });
-    return;
-  }
-
-  window.prompt("Kopier manuelt:", text);
+function showToast(message) {
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2200);
 }
 
-document.addEventListener("click", (event) => {
+function setCopyFeedback(button, message) {
+  if (!button) return;
+  const originalLabel = button.dataset.originalLabel || button.textContent;
+  button.dataset.originalLabel = originalLabel;
+  button.textContent = message;
+  button.classList.add("is-copied");
+
+  setTimeout(() => {
+    button.textContent = originalLabel;
+    button.classList.remove("is-copied");
+  }, 2000);
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch (error) {
+    copied = false;
+  }
+
+  document.body.removeChild(textarea);
+
+  if (!copied) {
+    window.prompt("Kopier manuelt:", text);
+  }
+
+  return copied;
+}
+
+document.addEventListener("click", async (event) => {
   const button = event.target.closest("button");
   if (!button) return;
 
@@ -426,11 +470,15 @@ document.addEventListener("click", (event) => {
   }
 
   if (button.dataset.copy === "detailCode") {
-    copyText(detailCode.textContent);
+    const copied = await copyText(detailCode.textContent);
+    showToast(copied ? "Kopiert til utklippstavle" : "Kopier manuelt");
+    setCopyFeedback(button, copied ? "Kopiert!" : "Kopier");
   }
 
   if (button.dataset.copyText) {
-    copyText(button.dataset.copyText);
+    const copied = await copyText(button.dataset.copyText);
+    showToast(copied ? "Kopiert til utklippstavle" : "Kopier manuelt");
+    setCopyFeedback(button, copied ? "Kopiert!" : "Kopier");
   }
 
   if (button.dataset.flowIndex) {
