@@ -2369,6 +2369,500 @@ return msg;`,
       },
     ],
   },
+  {
+    id: "solar-surplus-heater",
+    title: "Soloverskudd: varm opp varmtvannstank",
+    category: "Energi",
+    summary: "Bruk soloverskudd til å starte varmtvannsbereder når eksport er høy.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på sensor for eksport/produksjon (kW/W).",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og bygg payload.",
+      },
+      {
+        label: "Switch",
+        help: "Del opp for on/off når overskuddet faller under terskel.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. switch.turn_on/off for bereder.",
+      },
+    ],
+    code: `// Function node: soloverskudd
+const exportWatt = Number(msg.payload);
+if (Number.isNaN(exportWatt)) return null;
+msg.payload = { entity_id: "switch.varmtvann", state: exportWatt > 1200 ? "on" : "off" };
+return msg;`,
+    nextNodes: [
+      "Switch node på msg.payload.state",
+      "Action node: switch.turn_on",
+      "Action node: switch.turn_off",
+    ],
+    fields: [
+      {
+        name: "Terskel",
+        value: "1200 W eksport (eksempel)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Bereder slår av/på for ofte",
+        detail: "Legg inn hystereser eller delay for å dempe raske endringer.",
+      },
+    ],
+  },
+  {
+    id: "price-based-charging",
+    title: "Strømpris: billige timer for lading",
+    category: "Energi",
+    summary: "Start elbillading når strømprisen er under valgt terskel.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på sensor strømpris (NOK/kWh).",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk pris og bygg payload.",
+      },
+      {
+        label: "Switch",
+        help: "Del opp start/stop basert på pris.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. switch.turn_on/off for lader.",
+      },
+    ],
+    code: `// Function node: prisstyrt lading
+const price = Number(msg.payload);
+if (Number.isNaN(price)) return null;
+msg.payload = { entity_id: "switch.elbillader", state: price < 1.2 ? "on" : "off" };
+return msg;`,
+    nextNodes: [
+      "Switch node på msg.payload.state",
+      "Action node: switch.turn_on",
+      "Action node: switch.turn_off",
+    ],
+    fields: [
+      {
+        name: "Pris terskel",
+        value: "1.2 NOK/kWh (eksempel)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lading starter ikke",
+        detail: "Sjekk at pris-sensoren gir tallverdi og at switch-entity stemmer.",
+      },
+    ],
+  },
+  {
+    id: "air-purifier-auto",
+    title: "Luftrenser automatisk ved dårlig luft",
+    category: "Klima",
+    summary: "Slå på luftrenser når PM2.5 eller VOC er for høy.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på sensor for PM2.5 eller VOC.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og bygg payload.",
+      },
+      {
+        label: "Switch",
+        help: "Del opp on/off basert på luftkvalitet.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. fan.turn_on/off.",
+      },
+    ],
+    code: `// Function node: luftkvalitet
+const pm = Number(msg.payload);
+if (Number.isNaN(pm)) return null;
+msg.payload = { entity_id: "fan.luftrenser", state: pm > 12 ? "on" : "off" };
+return msg;`,
+    nextNodes: [
+      "Switch node på msg.payload.state",
+      "Action node: fan.turn_on",
+      "Action node: fan.turn_off",
+    ],
+    fields: [
+      {
+        name: "PM2.5 terskel",
+        value: "12 µg/m³ (eksempel)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Luftrenser går hele tiden",
+        detail: "Juster terskel og legg inn forsinkelse før avslag.",
+      },
+    ],
+  },
+  {
+    id: "bedtime-climate",
+    title: "Nattmodus: senk temperatur",
+    category: "Klima",
+    summary: "Senk temperatur når nattmodus aktiveres og øk igjen om morgenen.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "input_boolean.nattmodus eller kalender for leggetid.",
+      },
+      {
+        label: "Switch",
+        help: "Del opp natt/morgen.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett temperatur for natt og dag.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. climate.set_temperature.",
+      },
+    ],
+    code: `// Function node: natttemp
+msg.payload = { temperature: msg.night ? 18 : 21 };
+return msg;`,
+    nextNodes: ["Action node: climate.set_temperature"],
+    fields: [
+      {
+        name: "Action node → Entity",
+        value: "climate.soverom",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Temperatur endrer seg ikke",
+        detail: "Sjekk at klimaanlegget støtter set_temperature.",
+      },
+    ],
+  },
+  {
+    id: "workday-start-routine",
+    title: "Arbeidsdag: rutine kl 08:00",
+    category: "Tidsstyring",
+    summary: "Start lys, musikk og status når arbeidsdagen begynner.",
+    flow: [
+      {
+        label: "Inject",
+        help: "Kjør hverdager kl 08:00.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload for scene og musikk.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. scene.turn_on + media_player.play_media.",
+      },
+    ],
+    code: `// Function node: start arbeidsdag
+msg.scene = { entity_id: "scene.kontor" };
+msg.payload = {
+  media_content_id: "spotify:playlist:focus",
+  media_content_type: "music"
+};
+return msg;`,
+    nextNodes: [
+      "Action node: scene.turn_on",
+      "Action node: media_player.play_media",
+    ],
+    fields: [
+      {
+        name: "Inject → Time",
+        value: "08:00 (man-fre)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Musikk starter ikke",
+        detail: "Sjekk at media_player er aktiv og at kontoen er koblet til.",
+      },
+    ],
+  },
+  {
+    id: "dashboard-quick-scene",
+    title: "Dashboard: hurtigknapper for scener",
+    category: "Dashboard",
+    summary: "Lag en enkel knapperekke som aktiverer favorittscener.",
+    flow: [
+      {
+        label: "UI Button",
+        help: "Legg til UI Button for hver scene du vil ha.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett scene entity_id basert på knapp.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. scene.turn_on.",
+      },
+    ],
+    code: `// Function node: scene fra knapp
+const sceneMap = {
+  cozy: "scene.kos",
+  bright: "scene.lys",
+  movie: "scene.film"
+};
+msg.payload = { entity_id: sceneMap[msg.payload] };
+return msg;`,
+    nextNodes: ["Action node: scene.turn_on"],
+    fields: [
+      {
+        name: "UI Button → Payload",
+        value: "cozy / bright / movie",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Feil scene aktiveres",
+        detail: "Sjekk at payload fra knapp matcher nøklene i sceneMap.",
+      },
+    ],
+  },
+  {
+    id: "plant-watering-cycle",
+    title: "Hage: automatisk vanningssyklus",
+    category: "Hage",
+    summary: "Kjør vanning i flere soner med intervaller og auto-stopp ved regn.",
+    flow: [
+      {
+        label: "Inject",
+        help: "Planlagt starttid, f.eks. kl 05:00.",
+      },
+      {
+        label: "Current state",
+        help: "Sjekk at regn-sensor ikke er rainy/on.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag liste over soner.",
+      },
+      {
+        label: "Split + Delay",
+        help: "Send én sone om gangen og vent mellom hver.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. switch.turn_on/off for sone.",
+      },
+    ],
+    code: `// Function node: vanningssoner
+msg.payload = [
+  { entity_id: "switch.vanning_sone1" },
+  { entity_id: "switch.vanning_sone2" },
+  { entity_id: "switch.vanning_sone3" }
+];
+return msg;`,
+    nextNodes: [
+      "Split node (array)",
+      "Trigger node: 10 min per sone",
+      "Action node: switch.turn_on/off",
+    ],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 10 minutter (off)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Vanning går selv om det regner",
+        detail: "Sjekk at Current state er koblet før Split og bruker riktig regn-sensor.",
+      },
+    ],
+  },
+  {
+    id: "device-health-check",
+    title: "Enhetssjekk: ping kritiske enheter",
+    category: "Vedlikehold",
+    summary: "Ping enheter daglig og varsle hvis noen er offline.",
+    flow: [
+      {
+        label: "Inject",
+        help: "Kjør daglig eller hver time.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg liste over IP-er.",
+      },
+      {
+        label: "Split",
+        help: "Ping én og én enhet med ping-node.",
+      },
+      {
+        label: "Switch",
+        help: "Filtrer bort de som svarer OK.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. Send varsel med offline liste.",
+      },
+    ],
+    code: `// Function node: enhetsliste
+msg.payload = ["192.168.1.10", "192.168.1.20", "192.168.1.30"];
+return msg;`,
+    nextNodes: [
+      "Ping node (node-red-contrib-ping)",
+      "Change node: samle offline",
+      "Action node: notify.mobile_app_<telefon>",
+    ],
+    fields: [
+      {
+        name: "Inject → Interval",
+        value: "Hver 6. time (eksempel)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Ping-node mangler",
+        detail: "Installer node-red-contrib-ping eller bruk en HTTP GET-sjekk.",
+      },
+    ],
+  },
+  {
+    id: "oven-left-on",
+    title: "Kjøkken: komfyr stått på for lenge",
+    category: "Sikkerhet",
+    summary: "Varsle og slå av smartplugg hvis komfyren har vært på lenge.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på smartplugg for komfyr (on/off).",
+      },
+      {
+        label: "Trigger",
+        help: "Trigger node: sett Send-forsinkelse og Reset-betingelse. Vent 45 min før varsel.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. notify + switch.turn_off.",
+      },
+    ],
+    code: `// Function node: komfyrvarsel
+msg.payload = {
+  title: "Komfyr på lenge",
+  message: "Komfyren har stått på i 45 minutter."
+};
+return msg;`,
+    nextNodes: [
+      "Action node: notify.mobile_app_<telefon>",
+      "Action node: switch.turn_off",
+    ],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 45 minutter",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Komfyren slås av for tidlig",
+        detail: "Øk delay eller legg inn en manuell bekreftelse før avslag.",
+      },
+    ],
+  },
+  {
+    id: "guest-mode-scenes",
+    title: "Gjeste-modus: demp automasjoner",
+    category: "Scene",
+    summary: "Aktiver en gjestebryter som hopper over utvalgte automasjoner.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "input_boolean.gjestemodus on/off.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett flagg i flow context.",
+      },
+      {
+        label: "Switch",
+        help: "Andre automasjoner sjekker flagget før de kjører.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. Send bekreftelse.",
+      },
+    ],
+    code: `// Function node: gjestemodus-flag
+flow.set("guest_mode", msg.payload === "on");
+msg.payload = {
+  title: "Gjestemodus",
+  message: msg.payload === "on" ? "Automatiseringer er dempet." : "Automatiseringer er aktivert."
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "input_boolean.gjestemodus",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Automatiseringer ignorerer flagget",
+        detail: "Sjekk at flow.get(\"guest_mode\") brukes i relevante flows.",
+      },
+    ],
+  },
+  {
+    id: "backup-reminder",
+    title: "Backup-påminnelse for Home Assistant",
+    category: "Vedlikehold",
+    summary: "Send månedlig påminnelse om å ta backup eller kjør den automatisk.",
+    flow: [
+      {
+        label: "Inject",
+        help: "Kjør den 1. hver måned kl 09:00.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varsel eller backup-kommando.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: velg domene/service + entity/target/data. Send varsel eller kall hassio.backup_full.",
+      },
+    ],
+    code: `// Function node: backupvarsel
+msg.payload = {
+  title: "Backup-påminnelse",
+  message: "Husk å ta full backup av Home Assistant."
+};
+return msg;`,
+    nextNodes: [
+      "Action node: notify.mobile_app_<telefon>",
+      "Optional: Action node: hassio.backup_full",
+    ],
+    fields: [
+      {
+        name: "Inject → Time",
+        value: "1. hver måned kl 09:00",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Backup-service mangler",
+        detail: "Sjekk at Supervisor er tilgjengelig og at hassio.backup_full støttes.",
+      },
+    ],
+  },
 ];
 
 const state = {
