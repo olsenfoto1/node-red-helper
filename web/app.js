@@ -337,6 +337,13 @@ function escapeAttribute(value) {
   return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function showFlowHelp(index) {
   const step = activeFlow[index];
   if (!step) return;
@@ -346,7 +353,7 @@ function showFlowHelp(index) {
     ? `
       <div class="code-block">
         <button class="copy" data-copy-text="${escapeAttribute(activeRecipe.code)}">Kopier</button>
-        <pre><code>${activeRecipe.code}</code></pre>
+        <pre><code>${escapeHtml(activeRecipe.code)}</code></pre>
       </div>
     `
     : "";
@@ -370,8 +377,8 @@ function renderFields(fields) {
     block.innerHTML = `
       <p><strong>${field.name}</strong></p>
       <div class="code-block">
-        <button class="copy" data-copy-text="${field.value.replace(/"/g, "&quot;")}">Kopier</button>
-        <pre><code>${field.value}</code></pre>
+        <button class="copy" data-copy-text="${escapeAttribute(field.value)}">Kopier</button>
+        <pre><code>${escapeHtml(field.value)}</code></pre>
       </div>
     `;
     detailFields.appendChild(block);
