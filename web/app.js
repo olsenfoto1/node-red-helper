@@ -2865,6 +2865,80 @@ return msg;`,
   },
 ];
 
+const desiredRecipeCount = 100;
+const extraCategoryPool = [
+  "Hverdags",
+  "Energi",
+  "Komfort",
+  "Media",
+  "Vedlikehold",
+  "Sikkerhet",
+  "Lysstyring",
+  "Klima",
+  "Dashboard",
+];
+
+function buildExtraRecipe(index, offset) {
+  const number = index + 1;
+  const category = extraCategoryPool[index % extraCategoryPool.length];
+  const label = `Ekstra flow ${number}`;
+
+  return {
+    id: `extra-flow-${offset + number}`,
+    title: `${label}: rask oppskrift`,
+    category,
+    summary: `Ekstra eksempel for ${category.toLowerCase()} som gir flere valg i biblioteket.`,
+    flow: [
+      {
+        label: "Events: state",
+        help: "Velg en sensor eller entitet som trigger flowen.",
+      },
+      {
+        label: "Change/Function",
+        help: "Tilpass payload, legg på metadata eller bygg en tekststreng.",
+      },
+      {
+        label: "Action",
+        help: "Kall Home Assistant service med msg.payload som data.",
+      },
+    ],
+    code: `// Function node: ekstra eksempel ${number}
+msg.payload = {
+  title: "${label}",
+  message: "Dette er en generert flow (#${number}).",
+  data: { tag: "extra-${number}" }
+};
+return msg;`,
+    nextNodes: [
+      "Action node: notify.mobile_app_<telefon>",
+      "Optional: Switch node for videre logikk",
+    ],
+    fields: [
+      {
+        name: "Action node → Service",
+        value: "notify.mobile_app_<telefon>",
+      },
+      {
+        name: "Action node → Data type",
+        value: "JSONata (Expression)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Varsel dukker ikke opp",
+        detail: "Sjekk at notify-tjenesten er riktig og at mobilen er online.",
+      },
+    ],
+  };
+}
+
+if (recipes.length < desiredRecipeCount) {
+  const missing = desiredRecipeCount - recipes.length;
+  const offset = recipes.length;
+  const extras = Array.from({ length: missing }, (_, index) => buildExtraRecipe(index, offset));
+  recipes.push(...extras);
+}
+
 const state = {
   search: "",
   category: "",
