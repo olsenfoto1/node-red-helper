@@ -28,20 +28,22 @@
     </header>
 
     <main class="layout">
-      <section class="filters">
-        <label>
-          Søk
-          <input id="search" type="search" placeholder="Søk etter varsling, sensor, logikk..." />
-        </label>
-        <label>
-          Kategori
-          <select id="category">
-            <option value="">Alle</option>
-          </select>
-        </label>
-      </section>
+      <div class="content-row">
+        <aside class="category-panel">
+          <h2>Kategorier</h2>
+          <div class="category-list" id="categoryList"></div>
+        </aside>
+        <div class="content">
+          <section class="filters">
+            <label>
+              Søk
+              <input id="search" type="search" placeholder="Søk etter varsling, sensor, logikk..." />
+            </label>
+          </section>
 
-      <section class="grid" id="recipeGrid"></section>
+          <section class="grid" id="recipeGrid"></section>
+        </div>
+      </div>
 
       <section class="detail" id="detail" hidden>
         <button class="ghost" id="closeDetail" aria-label="Lukk detaljer">×</button>
