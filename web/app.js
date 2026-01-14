@@ -2372,7 +2372,7 @@ const state = {
 };
 
 const searchInput = document.getElementById("search");
-const categorySelect = document.getElementById("category");
+const categoryList = document.getElementById("categoryList");
 const grid = document.getElementById("recipeGrid");
 const detail = document.getElementById("detail");
 const closeDetail = document.getElementById("closeDetail");
@@ -2393,12 +2393,23 @@ let activeRecipe = null;
 let activeFlowIndex = null;
 
 function renderCategories() {
-  const categories = [...new Set(recipes.map((recipe) => recipe.category))];
-  categories.forEach((category) => {
-    const option = document.createElement("option");
-    option.value = category;
-    option.textContent = category;
-    categorySelect.appendChild(option);
+  if (!categoryList) return;
+  categoryList.innerHTML = "";
+  const categories = [...new Set(recipes.map((recipe) => recipe.category))].sort((a, b) =>
+    a.localeCompare(b, "no", { sensitivity: "base" })
+  );
+  const items = [{ label: "Alle", value: "" }, ...categories.map((category) => ({ label: category, value: category }))];
+
+  items.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "category-pill";
+    button.dataset.category = item.value;
+    button.textContent = item.label;
+    if (state.category === item.value) {
+      button.classList.add("active");
+    }
+    categoryList.appendChild(button);
   });
 }
 
@@ -2631,6 +2642,12 @@ document.addEventListener("click", async (event) => {
   if (button.dataset.flowIndex) {
     showFlowHelp(Number(button.dataset.flowIndex));
   }
+
+  if (button.dataset.category !== undefined) {
+    state.category = button.dataset.category;
+    renderCategories();
+    renderGrid();
+  }
 });
 
 closeDetail.addEventListener("click", () => {
@@ -2639,11 +2656,6 @@ closeDetail.addEventListener("click", () => {
 
 searchInput.addEventListener("input", (event) => {
   state.search = event.target.value.trim().toLowerCase();
-  renderGrid();
-});
-
-categorySelect.addEventListener("change", (event) => {
-  state.category = event.target.value;
   renderGrid();
 });
 
