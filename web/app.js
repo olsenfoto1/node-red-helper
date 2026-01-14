@@ -12,11 +12,11 @@ const recipes = [
       },
       {
         label: "Function",
-        help: "Lim inn koden under i Function-noden for å bygge payload med actions.",
+        help: "Klikk Kopier for å lime inn koden i Function-noden og bygg payload med actions.",
       },
       {
         label: "Action",
-        help: "Sett service til notify.mobile_app_<telefon> for å sende varselet.",
+        help: "Sett service til notify.mobile_app_<telefon>. Velg Data type: JSONata (Expression) og skriv payload for å sende msg.payload fra Function-noden.",
       },
       {
         label: "Events: all",
@@ -61,8 +61,12 @@ return msg;`,
         value: "notify.mobile_app_<telefon>",
       },
       {
+        name: "Action node → Data type",
+        value: "JSONata (Expression)",
+      },
+      {
         name: "Action node → Data",
-        value: "{{payload}} (type: JSONata / msg.payload)",
+        value: "payload",
       },
       {
         name: "Events: all → Event type",
@@ -257,6 +261,7 @@ const detailNext = document.getElementById("detailNext");
 const detailFields = document.getElementById("detailFields");
 const detailTroubleshoot = document.getElementById("detailTroubleshoot");
 let activeFlow = [];
+let activeRecipe = null;
 
 function renderCategories() {
   const categories = [...new Set(recipes.map((recipe) => recipe.category))];
@@ -328,13 +333,28 @@ function renderFlowDiagram(flow) {
   });
 }
 
+function escapeAttribute(value) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
 function showFlowHelp(index) {
   const step = activeFlow[index];
   if (!step) return;
 
+  const showFunctionSnippet = step.label.toLowerCase().includes("function") && activeRecipe?.code;
+  const functionSnippet = showFunctionSnippet
+    ? `
+      <div class="code-block">
+        <button class="copy" data-copy-text="${escapeAttribute(activeRecipe.code)}">Kopier</button>
+        <pre><code>${activeRecipe.code}</code></pre>
+      </div>
+    `
+    : "";
+
   detailFlowHelp.innerHTML = `
     <p class="flow-help-title">${step.label}</p>
     <p>${step.help}</p>
+    ${functionSnippet}
   `;
 
   [...detailFlow.querySelectorAll(".flow-node")].forEach((node) => {
@@ -375,6 +395,7 @@ function showDetail(recipeId) {
   const recipe = recipes.find((item) => item.id === recipeId);
   if (!recipe) return;
 
+  activeRecipe = recipe;
   detailTitle.textContent = recipe.title;
   detailCategory.textContent = recipe.category;
   detailSummary.textContent = recipe.summary;

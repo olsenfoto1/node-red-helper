@@ -259,6 +259,15 @@ button.ghost {
   color: #9aa6c7;
 }
 
+.flow-help .code-block {
+  margin-top: 0.9rem;
+}
+
+.flow-help .copy {
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
 @media (max-width: 900px) {
   .hero,
   .detail-content {
