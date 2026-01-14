@@ -3139,10 +3139,16 @@ function showFlowHelp(index) {
   const step = activeFlow[index];
   if (!step) return;
 
+  const showChangeFunctionNote = step.label.toLowerCase().includes("change/function");
   activeFlowIndex = index;
   detailFlowHelp.innerHTML = `
     <p class="flow-help-title">${step.label}</p>
     <p>${step.help}</p>
+    ${
+      showChangeFunctionNote
+        ? "<p class=\"muted\">Tips: Action-noder kan ofte konfigureres direkte med JSON/JSONata/templating. Bruk Change/Function kun når du må transformere data eller legge inn logikk.</p>"
+        : ""
+    }
   `;
 
   if (detailCodeBlock) {
