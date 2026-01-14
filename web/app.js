@@ -6,12 +6,30 @@ const recipes = [
     summary:
       "Send et actionable push-varsel og fang opp knappetrykkene med events all. Fikser vanlig feilen med at message ikke er en streng.",
     flow: [
-      "Trigger (f.eks. events: state på garasjeport)",
-      "Function node: bygg payload (kopier koden under)",
-      "Action node (call service): notify.mobile_app_<telefon>",
-      "Events: all med event type mobile_app_notification_action",
-      "Switch node: rute action = CLOSE_GARAGE / IGNORE_GARAGE",
-      "Action node(er): styr port eller lagre logg",
+      {
+        label: "Trigger",
+        help: "Bruk en Events: state-node på garasjeporten, eller en Inject for testing.",
+      },
+      {
+        label: "Function",
+        help: "Lim inn koden under i Function-noden for å bygge payload med actions.",
+      },
+      {
+        label: "Action",
+        help: "Sett service til notify.mobile_app_<telefon> for å sende varselet.",
+      },
+      {
+        label: "Events: all",
+        help: "Filtrer på event type mobile_app_notification_action for å fange knappetrykk.",
+      },
+      {
+        label: "Switch",
+        help: "Lag regler for action = CLOSE_GARAGE eller IGNORE_GARAGE.",
+      },
+      {
+        label: "Action",
+        help: "Utfør handling, f.eks. lukk port eller logg valget.",
+      },
     ],
     code: `// Function node: payload til notify
 msg.payload = {
@@ -70,10 +88,22 @@ return msg;`,
     category: "Sensor",
     summary: "Stabiliser sensorer med flapping ved å vente X sekunder før du reagerer.",
     flow: [
-      "Events: state (sensor)",
-      "Trigger node: send etter forsinkelse og reset ved endring",
-      "Function node: bygg payload for neste steg",
-      "Action / logg / varsel",
+      {
+        label: "Events: state",
+        help: "Velg sensoren som flapper, f.eks. dør eller bevegelse.",
+      },
+      {
+        label: "Trigger",
+        help: "Sett forsinkelse og huk av for reset ved endring (debounce).",
+      },
+      {
+        label: "Function",
+        help: "Rens msg.payload og legg på metadata før neste steg.",
+      },
+      {
+        label: "Action",
+        help: "Send varsel, logg eller oppdater dashboard etter behov.",
+      },
     ],
     code: `// Function node: lag en ren payload
 type = msg.payload;
@@ -107,9 +137,18 @@ return msg;`,
     category: "Dashboard",
     summary: "Oppdater en tekst-widget i Node-RED Dashboard eller Home Assistant.",
     flow: [
-      "Events: state (sensor) eller Inject",
-      "Function node: bygg status tekst",
-      "UI Text (Node-RED Dashboard) eller Action node (input_text.set_value)",
+      {
+        label: "Events / Inject",
+        help: "Start med Events: state eller en Inject for å trigge oppdatering.",
+      },
+      {
+        label: "Function",
+        help: "Lag en lesbar statusstreng i msg.payload.",
+      },
+      {
+        label: "UI / Action",
+        help: "Send til UI Text i Dashboard eller input_text.set_value i HA.",
+      },
     ],
     code: `// Function node: bygg status-tekst
 const state = msg.payload;
@@ -147,10 +186,22 @@ return msg;`,
     category: "Tidsstyring",
     summary: "Tenn lys 30 minutter før solnedgang og slå av etter midnatt.",
     flow: [
-      "Events: state (sun.sun)",
-      "Function node: sjekk tidspunkt + offset",
-      "Switch node: før/etter midnatt",
-      "Action node: light.turn_on / light.turn_off",
+      {
+        label: "Events: state",
+        help: "Lytt på sun.sun for å trigge ved endring.",
+      },
+      {
+        label: "Function",
+        help: "Legg inn offset og target før du sender videre.",
+      },
+      {
+        label: "Switch",
+        help: "Del opp i før/etter midnatt med regler på tidspunkt.",
+      },
+      {
+        label: "Action",
+        help: "Utfør light.turn_on eller light.turn_off basert på regelen.",
+      },
     ],
     code: `// Function node: offset ved solnedgang
 const sunState = msg.data?.new_state?.state;
@@ -200,10 +251,12 @@ const detailTitle = document.getElementById("detailTitle");
 const detailCategory = document.getElementById("detailCategory");
 const detailSummary = document.getElementById("detailSummary");
 const detailFlow = document.getElementById("detailFlow");
+const detailFlowHelp = document.getElementById("detailFlowHelp");
 const detailCode = document.getElementById("detailCode");
 const detailNext = document.getElementById("detailNext");
 const detailFields = document.getElementById("detailFields");
 const detailTroubleshoot = document.getElementById("detailTroubleshoot");
+let activeFlow = [];
 
 function renderCategories() {
   const categories = [...new Set(recipes.map((recipe) => recipe.category))];
@@ -253,6 +306,42 @@ function renderList(list, container, wrapper) {
   });
 }
 
+function renderFlowDiagram(flow) {
+  activeFlow = flow;
+  detailFlow.innerHTML = "";
+
+  flow.forEach((step, index) => {
+    const node = document.createElement("button");
+    node.type = "button";
+    node.className = "flow-node";
+    node.dataset.flowIndex = index;
+    node.textContent = step.label;
+    node.setAttribute("role", "listitem");
+    detailFlow.appendChild(node);
+
+    if (index < flow.length - 1) {
+      const arrow = document.createElement("span");
+      arrow.className = "flow-arrow";
+      arrow.textContent = "→";
+      detailFlow.appendChild(arrow);
+    }
+  });
+}
+
+function showFlowHelp(index) {
+  const step = activeFlow[index];
+  if (!step) return;
+
+  detailFlowHelp.innerHTML = `
+    <p class="flow-help-title">${step.label}</p>
+    <p>${step.help}</p>
+  `;
+
+  [...detailFlow.querySelectorAll(".flow-node")].forEach((node) => {
+    node.classList.toggle("active", Number(node.dataset.flowIndex) === index);
+  });
+}
+
 function renderFields(fields) {
   detailFields.innerHTML = "";
   fields.forEach((field) => {
@@ -290,7 +379,8 @@ function showDetail(recipeId) {
   detailCategory.textContent = recipe.category;
   detailSummary.textContent = recipe.summary;
   detailCode.textContent = recipe.code;
-  renderList(recipe.flow, detailFlow, "li");
+  renderFlowDiagram(recipe.flow);
+  showFlowHelp(0);
   renderList(recipe.nextNodes, detailNext, "li");
   renderFields(recipe.fields);
   renderTroubleshoot(recipe.troubleshoot);
@@ -319,6 +409,10 @@ document.addEventListener("click", (event) => {
 
   if (button.dataset.copyText) {
     copyText(button.dataset.copyText);
+  }
+
+  if (button.dataset.flowIndex) {
+    showFlowHelp(Number(button.dataset.flowIndex));
   }
 });
 
