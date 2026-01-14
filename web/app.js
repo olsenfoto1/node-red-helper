@@ -238,6 +238,2132 @@ return msg;`,
       },
     ],
   },
+  {
+    id: "door-left-open",
+    title: "Dør stått åpen for lenge",
+    category: "Sikkerhet",
+    summary: "Varsle hvis ytterdør eller garasje har stått åpen i mer enn X minutter.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på dør- eller port-sensor som går til open.",
+      },
+      {
+        label: "Trigger",
+        help: "Send videre etter X minutter, og reset hvis døren lukkes.",
+      },
+      {
+        label: "Function",
+        help: "Lag meldingspayload med rom, tid og alvorlighet.",
+      },
+      {
+        label: "Action",
+        help: "Send varsel til mobil eller høyttaler.",
+      },
+    ],
+    code: `// Function node: bygg varsel
+const name = msg.data?.new_state?.attributes?.friendly_name || msg.entity_id;
+msg.payload = {
+  title: "Dør står åpen",
+  message: name + " har stått åpen i 10 minutter.",
+  data: { tag: "door-open", priority: "high" }
+};
+return msg;`,
+    nextNodes: [
+      "Action node: notify.mobile_app_<telefon>",
+      "Optional: TTS til høyttaler",
+    ],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 10 minutter",
+      },
+      {
+        name: "Trigger node → Reset with",
+        value: "payload: \"off\" (eller closed)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Varsel sendes selv om døren lukkes",
+        detail: "Sjekk at Trigger resettes når sensor går til closed/off.",
+      },
+    ],
+  },
+  {
+    id: "night-motion-alert",
+    title: "Nattmodus: bevegelse gir alarm",
+    category: "Sikkerhet",
+    summary: "Send varsel og blink lys hvis det registreres bevegelse om natten.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Bevegelsessensor som går til on.",
+      },
+      {
+        label: "Time range",
+        help: "Filtrer kun mellom 23:00 og 06:00.",
+      },
+      {
+        label: "Function",
+        help: "Bygg payload til varsel og lys-blink.",
+      },
+      {
+        label: "Action",
+        help: "Send push-varsel og slå på lys i kort tid.",
+      },
+    ],
+    code: `// Function node: nattvarsel
+msg.payload = {
+  title: "Bevegelse oppdaget",
+  message: "Bevegelse registrert i " + (msg.data?.new_state?.attributes?.friendly_name || "ukjent rom"),
+  data: { tag: "night-motion", priority: "high" }
+};
+msg.blink = { entity_id: "light.gang", flash: "short" };
+return msg;`,
+    nextNodes: [
+      "Action node: notify.mobile_app_<telefon>",
+      "Action node: light.turn_on (flash)",
+    ],
+    fields: [
+      {
+        name: "Time range → From",
+        value: "23:00",
+      },
+      {
+        name: "Time range → To",
+        value: "06:00",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Blink fungerer ikke",
+        detail: "Sjekk at lyset støtter flash, ellers bruk en kort delay + off.",
+      },
+    ],
+  },
+  {
+    id: "alarm-disarm-reminder",
+    title: "Husk å deaktivere alarm ved ankomst",
+    category: "Sikkerhet",
+    summary: "Når noen kommer hjem og alarmen er på, send en påminnelse.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på person.<navn> eller device_tracker.",
+      },
+      {
+        label: "Current state",
+        help: "Sjekk om alarm_control_panel er armed.",
+      },
+      {
+        label: "Function",
+        help: "Lag varseltekst med knapp for å deaktivere.",
+      },
+      {
+        label: "Action",
+        help: "Send actionable push.",
+      },
+    ],
+    code: `// Function node: actionable reminder
+msg.payload = {
+  title: "Alarmen er aktiv",
+  message: "Vil du deaktivere alarmen?",
+  data: {
+    actions: [
+      { action: "DISARM_ALARM", title: "Deaktiver" },
+      { action: "IGNORE", title: "Ignorer" }
+    ]
+  }
+};
+return msg;`,
+    nextNodes: [
+      "Events: all (mobile_app_notification_action)",
+      "Switch on msg.payload.action",
+      "Action node: alarm_control_panel.alarm_disarm",
+    ],
+    fields: [
+      {
+        name: "Current state → Entity",
+        value: "alarm_control_panel.hjem",
+      },
+      {
+        name: "Action node → Service",
+        value: "notify.mobile_app_<telefon>",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Knappetrykk fanges ikke",
+        detail: "Sjekk event type mobile_app_notification_action i Events: all.",
+      },
+    ],
+  },
+  {
+    id: "doorbell-snapshot",
+    title: "Ringeklokke + kamerabilde til mobil",
+    category: "Sikkerhet",
+    summary: "Når noen ringer på, ta snapshot og send varsel med bilde.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Ringeklokke-sensor eller binary_sensor for ring.",
+      },
+      {
+        label: "Action",
+        help: "Kjør camera.snapshot og lagre fil i /config/www.",
+      },
+      {
+        label: "Function",
+        help: "Bygg notify med bilde-URL.",
+      },
+      {
+        label: "Action",
+        help: "Send push med bilde.",
+      },
+    ],
+    code: `// Function node: varsel med bilde
+const imagePath = "/local/snapshots/doorbell.jpg";
+msg.payload = {
+  title: "Noen ringer på",
+  message: "Trykk for å åpne live.",
+  data: { image: imagePath, tag: "doorbell" }
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "camera.snapshot → filename",
+        value: "/config/www/snapshots/doorbell.jpg",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Bildet vises ikke",
+        detail: "Sjekk at filen ligger i /config/www og at URL er /local/...",
+      },
+    ],
+  },
+  {
+    id: "flood-alert",
+    title: "Vannlekkasje: steng vann + varsle",
+    category: "Sikkerhet",
+    summary: "Når lekkasjesensor trigger, steng vannventil og send varsel.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på binary_sensor.leak.",
+      },
+      {
+        label: "Function",
+        help: "Merk alarmnivå og lokasjon.",
+      },
+      {
+        label: "Action",
+        help: "Steng vannventil og send varsel.",
+      },
+    ],
+    code: `// Function node: lekkasjealarm
+const location = msg.data?.new_state?.attributes?.friendly_name || "ukjent område";
+msg.payload = {
+  title: "Vannlekkasje oppdaget",
+  message: "Lekkasjesensor i " + location,
+  data: { priority: "high" }
+};
+return msg;`,
+    nextNodes: [
+      "Action node: valve.close_valve",
+      "Action node: notify.mobile_app_<telefon>",
+    ],
+    fields: [
+      {
+        name: "Action node → Service",
+        value: "valve.close_valve",
+      },
+      {
+        name: "Action node → Target",
+        value: "valve.hovedkran",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Ventil reagerer ikke",
+        detail: "Sjekk at ventilen støtter close_valve og at entity_id er riktig.",
+      },
+    ],
+  },
+  {
+    id: "smoke-alert",
+    title: "Røykvarsler: massiv varsling",
+    category: "Sikkerhet",
+    summary: "Når røykvarsler går av, send push, tts og aktiver sirene.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Bruk smoke sensor (on) som trigger.",
+      },
+      {
+        label: "Function",
+        help: "Bygg alarmtekst og legg på TTS.",
+      },
+      {
+        label: "Action",
+        help: "Send varsler, slå på sirene og lys.",
+      },
+    ],
+    code: `// Function node: røykalarm
+msg.payload = {
+  title: "Røyk oppdaget",
+  message: "Røykvarsler utløst! Evakuer nå.",
+  data: { tag: "smoke", priority: "high" }
+};
+msg.tts = "Røyk oppdaget. Evakuer nå.";
+return msg;`,
+    nextNodes: [
+      "Action node: notify.mobile_app_<telefon>",
+      "Action node: tts.cloud_say",
+      "Action node: siren.turn_on",
+    ],
+    fields: [
+      {
+        name: "Action node → Service (sirene)",
+        value: "siren.turn_on",
+      },
+      {
+        name: "Action node → Service (tts)",
+        value: "tts.cloud_say",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "TTS spilles ikke",
+        detail: "Sjekk at media_player er online og at TTS er konfigurert.",
+      },
+    ],
+  },
+  {
+    id: "away-light-random",
+    title: "Borte-modus: tilfeldig lysstyring",
+    category: "Lysstyring",
+    summary: "Når huset er tomt, simuler tilstedeværelse med tilfeldig lys.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på input_boolean.away_mode.",
+      },
+      {
+        label: "Inject",
+        help: "Kjør hvert 30. minutt for å trigge tilfeldig valg.",
+      },
+      {
+        label: "Function",
+        help: "Velg tilfeldig lys og av/på.",
+      },
+      {
+        label: "Action",
+        help: "Slå valgt lys av/på.",
+      },
+    ],
+    code: `// Function node: tilfeldig lys
+const lights = ["light.stue", "light.kjokken", "light.gang"];
+const pick = lights[Math.floor(Math.random() * lights.length)];
+msg.payload = {
+  target: { entity_id: pick },
+  data: { brightness_pct: 60 }
+};
+msg.toggle = Math.random() > 0.4;
+return msg;`,
+    nextNodes: [
+      "Switch node: msg.toggle true/false",
+      "Action node: light.turn_on / light.turn_off",
+    ],
+    fields: [
+      {
+        name: "Inject → Interval",
+        value: "Hvert 30. minutt",
+      },
+      {
+        name: "Events: state → Entity",
+        value: "input_boolean.away_mode",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lys slås på når du er hjemme",
+        detail: "Sjekk at away_mode faktisk er on og at Inject er koblet via en gate.",
+      },
+    ],
+  },
+  {
+    id: "lux-based-lighting",
+    title: "Lys etter lux-nivå",
+    category: "Lysstyring",
+    summary: "Tenn lys når lux faller under terskel og noen er hjemme.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på sensor.lux og person status.",
+      },
+      {
+        label: "Function",
+        help: "Sjekk terskel og sett brightness.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on når det er mørkt nok.",
+      },
+    ],
+    code: `// Function node: lux-sjekk
+const lux = Number(msg.payload);
+if (Number.isNaN(lux) || lux > 120) return null;
+msg.payload = {
+  brightness_pct: 70,
+  kelvin: 3000
+};
+return msg;`,
+    nextNodes: ["Action node: light.turn_on"],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "sensor.stue_lux",
+      },
+      {
+        name: "Lux terskel",
+        value: "120 (eksempel)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset tennes i dagslys",
+        detail: "Juster terskel eller sjekk at lux-sensoren rapporterer korrekt.",
+      },
+    ],
+  },
+  {
+    id: "adaptive-brightness",
+    title: "Adaptiv lysstyrke per tid",
+    category: "Lysstyring",
+    summary: "Demp lys på kveld, sterkere på dagtid.",
+    flow: [
+      {
+        label: "Time range",
+        help: "Lag regler for morgen, dag, kveld og natt.",
+      },
+      {
+        label: "Function",
+        help: "Sett brightness basert på tid.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on med riktig brightness.",
+      },
+    ],
+    code: `// Function node: velg lysnivå
+const hour = new Date().getHours();
+let brightness = 30;
+if (hour >= 7 && hour < 17) brightness = 80;
+if (hour >= 17 && hour < 22) brightness = 60;
+msg.payload = { brightness_pct: brightness };
+return msg;`,
+    nextNodes: ["Action node: light.turn_on"],
+    fields: [
+      {
+        name: "Time range → Sett regler",
+        value: "07-17, 17-22, 22-07",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset blir alltid lavt",
+        detail: "Sjekk at Function-noden får korrekt tid (server-tid).",
+      },
+    ],
+  },
+  {
+    id: "wake-up-light",
+    title: "Morgenlys med gradvis opptrapping",
+    category: "Lysstyring",
+    summary: "Øk lysstyrken gradvis 20 minutter før vekking.",
+    flow: [
+      {
+        label: "Inject",
+        help: "Start 20 min før ønsket tidspunkt.",
+      },
+      {
+        label: "Function",
+        help: "Bygg sequence for brightness over tid.",
+      },
+      {
+        label: "Delay",
+        help: "Send lysstyrke i steg (repeat).",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on med nye brightness.",
+      },
+    ],
+    code: `// Function node: lag stegvis lysstyrke
+const steps = [10, 20, 35, 50, 70, 90];
+msg.payload = steps.map((value) => ({
+  payload: { brightness_pct: value }
+}));
+return msg;`,
+    nextNodes: [
+      "Split node (array)",
+      "Delay node: 2 min per steg",
+      "Action node: light.turn_on",
+    ],
+    fields: [
+      {
+        name: "Delay → Rate",
+        value: "1 msg per 2 min",
+      },
+      {
+        name: "Action node → Target",
+        value: "light.soverom",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset hopper rett til maks",
+        detail: "Sjekk at Split + Delay er koblet før Action.",
+      },
+    ],
+  },
+  {
+    id: "motion-light-timeout",
+    title: "Bevegelse → lys med tidsavslag",
+    category: "Lysstyring",
+    summary: "Tenn lys ved bevegelse og slå av etter X minutter uten bevegelse.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Motion sensor on/off.",
+      },
+      {
+        label: "Switch",
+        help: "Del opp on/off.",
+      },
+      {
+        label: "Action",
+        help: "Slå på lyset når on.",
+      },
+      {
+        label: "Trigger",
+        help: "Når off, vent X minutter før du slår av.",
+      },
+    ],
+    code: `// Function node: valgfri nattdimming
+msg.payload = { brightness_pct: 50 };
+return msg;`,
+    nextNodes: [
+      "Action node: light.turn_on",
+      "Trigger node: send off etter 5 min",
+      "Action node: light.turn_off",
+    ],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 5 minutter",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset slås av selv om det er bevegelse",
+        detail: "Sjekk at Trigger resettes når bevegelse går til on.",
+      },
+    ],
+  },
+  {
+    id: "manual-override",
+    title: "Manuell overstyring av automasjon",
+    category: "Lysstyring",
+    summary: "Sett en flagg-boolean når lys slås manuelt, og hopp over automasjon.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på light.entity som blir togglet.",
+      },
+      {
+        label: "Function",
+        help: "Sett input_boolean.manual_override i 30 minutter.",
+      },
+      {
+        label: "Action",
+        help: "Slå på boolean og start timer.",
+      },
+    ],
+    code: `// Function node: opprett manuelt flagg
+msg.payload = {
+  entity_id: "input_boolean.manual_override",
+  state: "on"
+};
+return msg;`,
+    nextNodes: [
+      "Action node: input_boolean.turn_on",
+      "Trigger node: send off etter 30 min",
+      "Action node: input_boolean.turn_off",
+    ],
+    fields: [
+      {
+        name: "Action node → Service",
+        value: "input_boolean.turn_on",
+      },
+      {
+        name: "Trigger node → Send",
+        value: "Etter 30 minutter",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Automatiseringen ignorerer ikke override",
+        detail: "Legg inn en Current state-sjekk på input_boolean.manual_override.",
+      },
+    ],
+  },
+  {
+    id: "security-light-flash",
+    title: "Sikkerhetsblink av utelys",
+    category: "Sikkerhet",
+    summary: "Blink utelys når bevegelse oppdages i hagen om natten.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Bevegelsessensor ute.",
+      },
+      {
+        label: "Time range",
+        help: "Kun etter solnedgang.",
+      },
+      {
+        label: "Function",
+        help: "Sett flash og lysnivå.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on med flash.",
+      },
+    ],
+    code: `// Function node: flash utelys
+msg.payload = {
+  entity_id: "light.ute",
+  flash: "short",
+  brightness_pct: 100
+};
+return msg;`,
+    nextNodes: ["Action node: light.turn_on"],
+    fields: [
+      {
+        name: "Time range → Start",
+        value: "sunset",
+      },
+      {
+        name: "Time range → Slutt",
+        value: "sunrise",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Flash støttes ikke",
+        detail: "Bytt til et blink via delay + off om lyset ikke støtter flash.",
+      },
+    ],
+  },
+  {
+    id: "panic-button",
+    title: "Panikknapp: alt lys på + varsling",
+    category: "Sikkerhet",
+    summary: "En fysisk knapp eller dashboard-knapp som setter huset i alarmmodus.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Knapp, input_button eller MQTT trigger.",
+      },
+      {
+        label: "Function",
+        help: "Sett payload for lys, sirene og varsling.",
+      },
+      {
+        label: "Action",
+        help: "Slå på alle lys og send varsel.",
+      },
+    ],
+    code: `// Function node: panikkmodus
+msg.payload = {
+  title: "Panikknapp aktivert",
+  message: "Alarmmodus aktivert manuelt.",
+  data: { priority: "high" }
+};
+msg.lights = { entity_id: "light.all_lights", brightness_pct: 100 };
+return msg;`,
+    nextNodes: [
+      "Action node: light.turn_on",
+      "Action node: notify.mobile_app_<telefon>",
+      "Optional: siren.turn_on",
+    ],
+    fields: [
+      {
+        name: "Action node → Target",
+        value: "light.all_lights",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Ikke alle lys reagerer",
+        detail: "Sjekk at light.all_lights er en gyldig gruppe i Home Assistant.",
+      },
+    ],
+  },
+  {
+    id: "garage-auto-close",
+    title: "Garasjeport auto-lukk etter X minutter",
+    category: "Sikkerhet",
+    summary: "Lukk garasjeporten automatisk hvis den står åpen for lenge.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på garasjeport som går til open.",
+      },
+      {
+        label: "Trigger",
+        help: "Send videre etter X minutter, reset ved lukking.",
+      },
+      {
+        label: "Action",
+        help: "Lukk port og send varsel.",
+      },
+    ],
+    code: `// Function node: logg auto-lukk
+msg.payload = {
+  title: "Garasjeport auto-lukk",
+  message: "Porten ble lukket automatisk.",
+  data: { tag: "garage-auto-close" }
+};
+return msg;`,
+    nextNodes: [
+      "Action node: cover.close_cover",
+      "Action node: notify.mobile_app_<telefon>",
+    ],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 15 minutter",
+      },
+      {
+        name: "Action node → Service",
+        value: "cover.close_cover",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Porten lukkes ikke",
+        detail: "Sjekk at cover-entity støtter close_cover og at sensor rapporterer korrekt.",
+      },
+    ],
+  },
+  {
+    id: "lock-when-away",
+    title: "Lås dør automatisk når alle drar",
+    category: "Sikkerhet",
+    summary: "Når alle er borte, lås dører og slå av lys.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på group.family eller person-entiteter.",
+      },
+      {
+        label: "Current state",
+        help: "Sjekk om status = not_home.",
+      },
+      {
+        label: "Function",
+        help: "Bygg payload for lås og lys.",
+      },
+      {
+        label: "Action",
+        help: "lock.lock og light.turn_off.",
+      },
+    ],
+    code: `// Function node: lås og slukk
+msg.payload = { entity_id: "lock.ytterdor" };
+msg.lights = { entity_id: "light.all_lights" };
+return msg;`,
+    nextNodes: [
+      "Action node: lock.lock",
+      "Action node: light.turn_off",
+    ],
+    fields: [
+      {
+        name: "Current state → Entity",
+        value: "group.family",
+      },
+      {
+        name: "Current state → State",
+        value: "not_home",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Døren låses ikke",
+        detail: "Sjekk at lock-entity er korrekt og ikke allerede i låst tilstand.",
+      },
+    ],
+  },
+  {
+    id: "arrival-welcome",
+    title: "Velkomstlys ved ankomst",
+    category: "Lysstyring",
+    summary: "Når noen kommer hjem etter mørkets frembrudd, tenn velkomstlys.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "person.<navn> går til home.",
+      },
+      {
+        label: "Time range",
+        help: "Kun etter solnedgang eller mellom 17-06.",
+      },
+      {
+        label: "Function",
+        help: "Sett lysnivå og varme.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on på utelys og gang.",
+      },
+    ],
+    code: `// Function node: velkomstlys
+msg.payload = {
+  brightness_pct: 65,
+  kelvin: 2700
+};
+return msg;`,
+    nextNodes: ["Action node: light.turn_on"],
+    fields: [
+      {
+        name: "Action node → Target",
+        value: "light.gang, light.ute",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset tennes når det er lyst",
+        detail: "Juster tidsfilter eller legg inn lux-sjekk.",
+      },
+    ],
+  },
+  {
+    id: "camera-mode-auto",
+    title: "Kamera-modus basert på hjemme/borte",
+    category: "Sikkerhet",
+    summary: "Skru på persondeteksjon når alle er borte, av når noen er hjemme.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på group.family.",
+      },
+      {
+        label: "Switch",
+        help: "Velg home/not_home.",
+      },
+      {
+        label: "Action",
+        help: "Slå av/på kamera-automatisering.",
+      },
+    ],
+    code: `// Function node: velg kamera-modus
+msg.payload = { entity_id: "switch.camera_person_detection" };
+return msg;`,
+    nextNodes: [
+      "Action node: switch.turn_on",
+      "Action node: switch.turn_off",
+    ],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "group.family",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Kamera-switch reagerer ikke",
+        detail: "Sjekk at switch-entity eksisterer og at du har riktige rettigheter.",
+      },
+    ],
+  },
+  {
+    id: "mailbox-alert",
+    title: "Postkasse-varsel",
+    category: "Varsling",
+    summary: "Send varsel når postkassen åpnes eller vibrasjon registreres.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på sensor/postkasse.",
+      },
+      {
+        label: "Function",
+        help: "Bygg varseltekst og logg tid.",
+      },
+      {
+        label: "Action",
+        help: "Send push-varsel.",
+      },
+    ],
+    code: `// Function node: postkassevarsel
+msg.payload = {
+  title: "Post i kassen",
+  message: "Postkassen ble åpnet.",
+  data: { tag: "mailbox" }
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "binary_sensor.postkasse",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "For mange varsler",
+        detail: "Legg inn en debounce/trigger for å begrense antallet.",
+      },
+    ],
+  },
+  {
+    id: "package-drop",
+    title: "Pakkelevering: varsle ved bevegelse ved dør",
+    category: "Varsling",
+    summary: "Koble dørkamera og bevegelse til et nyttig leveringsvarsel.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Bevegelse ved inngangsdør.",
+      },
+      {
+        label: "Function",
+        help: "Lag varsel med lenke til kamera.",
+      },
+      {
+        label: "Action",
+        help: "Send push med live-lenke.",
+      },
+    ],
+    code: `// Function node: pakkevarsel
+msg.payload = {
+  title: "Mulig pakkelevering",
+  message: "Bevegelse ved inngangsdør. Sjekk kamera.",
+  data: { url: "/lovelace/door" }
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Action node → Data",
+        value: "payload (JSONata)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lenke åpnes ikke",
+        detail: "Sjekk at du bruker en gyldig URL i data.url.",
+      },
+    ],
+  },
+  {
+    id: "window-open-hvac",
+    title: "Vindusdeteksjon stopper varme",
+    category: "Klima",
+    summary: "Slå av varme når et vindu åpnes, slå på igjen når det lukkes.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på vindus-sensor.",
+      },
+      {
+        label: "Switch",
+        help: "Velg open/closed.",
+      },
+      {
+        label: "Action",
+        help: "climate.set_hvac_mode eller switch.",
+      },
+    ],
+    code: `// Function node: sett hvac
+msg.payload = { hvac_mode: "off" };
+return msg;`,
+    nextNodes: [
+      "Action node: climate.set_hvac_mode (off)",
+      "Action node: climate.set_hvac_mode (heat)",
+    ],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "binary_sensor.vindu_stue",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "HVAC endrer ikke modus",
+        detail: "Sjekk at klimaanlegget støtter hvac_mode.",
+      },
+    ],
+  },
+  {
+    id: "energy-peak-avoid",
+    title: "Unngå effekttopper",
+    category: "Energi",
+    summary: "Skru av store laster når forbruket er høyt.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på sensor for effekt (W).",
+      },
+      {
+        label: "Function",
+        help: "Sjekk terskel og bygg mål.",
+      },
+      {
+        label: "Action",
+        help: "Slå av valgte laster.",
+      },
+    ],
+    code: `// Function node: kutt forbruk
+const watts = Number(msg.payload);
+if (Number.isNaN(watts) || watts < 6000) return null;
+msg.payload = { entity_id: "switch.varmtvann" };
+return msg;`,
+    nextNodes: ["Action node: switch.turn_off"],
+    fields: [
+      {
+        name: "Terskel",
+        value: "6000 W (eksempel)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Trigger går aldri",
+        detail: "Sjekk at sensor rapporterer i W og ikke kW.",
+      },
+    ],
+  },
+  {
+    id: "battery-low-digest",
+    title: "Lavt batteri: daglig oppsummering",
+    category: "Vedlikehold",
+    summary: "Samle alle lavt batteri-sensorer og send daglig rapport.",
+    flow: [
+      {
+        label: "Inject",
+        help: "Kjør daglig kl 08:00.",
+      },
+      {
+        label: "Function",
+        help: "Filtrer entiteter og lag rapporttekst.",
+      },
+      {
+        label: "Action",
+        help: "Send varsel med liste over batterier.",
+      },
+    ],
+    code: `// Function node: bygg batterirapport
+const entities = msg.battery_entities || [];
+const low = entities.filter((item) => item.state < 25);
+if (low.length === 0) return null;
+msg.payload = {
+  title: "Lavt batteri",
+  message: low.map((item) => item.name + " (" + item.state + "%)").join(", ")
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Inject → Time",
+        value: "08:00",
+      },
+      {
+        name: "Function → Entities input",
+        value: "Use a get-entities node (node-red-contrib-home-assistant)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Ingen entiteter i listen",
+        detail: "Sjekk at get-entities returnerer battery-sensorer.",
+      },
+    ],
+  },
+  {
+    id: "presence-lights-off",
+    title: "Ingen hjemme: slå av glemte lys",
+    category: "Energi",
+    summary: "Når alle drar, slukk alle lys og send en loggmelding.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på group.family.",
+      },
+      {
+        label: "Current state",
+        help: "Sjekk at status = not_home.",
+      },
+      {
+        label: "Function",
+        help: "Bygg payload for avslag.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_off alle lys.",
+      },
+    ],
+    code: `// Function node: slå av lys
+msg.payload = { entity_id: "light.all_lights" };
+return msg;`,
+    nextNodes: ["Action node: light.turn_off"],
+    fields: [
+      {
+        name: "Action node → Target",
+        value: "light.all_lights",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lys blir ikke slukket",
+        detail: "Sjekk at group/all-lights finnes og at entity_id stemmer.",
+      },
+    ],
+  },
+  {
+    id: "quiet-hours-notify",
+    title: "Rolige timer: demp varsler",
+    category: "Varsling",
+    summary: "Bruk notification-channel eller priority for å dempe varsler om natten.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Any trigger du vil varsle på.",
+      },
+      {
+        label: "Time range",
+        help: "Nattvindu for demping.",
+      },
+      {
+        label: "Function",
+        help: "Sett priority eller channel basert på tid.",
+      },
+      {
+        label: "Action",
+        help: "Send varsel med dempet kanal.",
+      },
+    ],
+    code: `// Function node: demp varsler
+const hour = new Date().getHours();
+const quiet = hour >= 22 || hour < 7;
+msg.payload = {
+  title: "Varsel",
+  message: "Hendelse registrert.",
+  data: { importance: quiet ? "low" : "high", channel: quiet ? "quiet" : "default" }
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Time range → From",
+        value: "22:00",
+      },
+      {
+        name: "Time range → To",
+        value: "07:00",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Demping fungerer ikke",
+        detail: "Sjekk at mobilappen har notification channel satt opp.",
+      },
+    ],
+  },
+  {
+    id: "humidity-fan",
+    title: "Bad: vifte på ved høy luftfuktighet",
+    category: "Klima",
+    summary: "Slå på vifte når fuktighet øker kraftig, slå av når normal.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på humidity-sensor.",
+      },
+      {
+        label: "Function",
+        help: "Sjekk terskel og delta.",
+      },
+      {
+        label: "Action",
+        help: "switch.turn_on/off på baderomsvifte.",
+      },
+    ],
+    code: `// Function node: fuktighetsstyring
+const humidity = Number(msg.payload);
+if (Number.isNaN(humidity)) return null;
+msg.payload = { entity_id: "switch.badvifte", state: humidity > 65 ? "on" : "off" };
+return msg;`,
+    nextNodes: [
+      "Switch node på msg.payload.state",
+      "Action node: switch.turn_on",
+      "Action node: switch.turn_off",
+    ],
+    fields: [
+      {
+        name: "Humidity terskel",
+        value: "65% (eksempel)",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Viften blafrer",
+        detail: "Legg inn hystereseter eller debounce på sensor.",
+      },
+    ],
+  },
+  {
+    id: "air-quality-alert",
+    title: "Luftkvalitet: varsle ved høy CO2",
+    category: "Varsling",
+    summary: "Send varsel når CO2-nivået blir høyt.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på sensor.co2.",
+      },
+      {
+        label: "Function",
+        help: "Sjekk ppm og bygg varsel.",
+      },
+      {
+        label: "Action",
+        help: "Send push-varsel eller TTS.",
+      },
+    ],
+    code: `// Function node: CO2-varsel
+const co2 = Number(msg.payload);
+if (Number.isNaN(co2) || co2 < 1200) return null;
+msg.payload = {
+  title: "Høy CO2",
+  message: "CO2-nivået er " + co2 + " ppm. Luft ut."
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "CO2 terskel",
+        value: "1200 ppm",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "For mange varsler",
+        detail: "Legg inn en cooldown (delay) mellom varsler.",
+      },
+    ],
+  },
+  {
+    id: "laundry-done",
+    title: "Vask ferdig-varsel",
+    category: "Varsling",
+    summary: "Send varsel når vaskemaskinen har vært stille i X minutter.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på power-sensor til vaskemaskin.",
+      },
+      {
+        label: "Trigger",
+        help: "Når effekten er lav i 5 min, send varsel.",
+      },
+      {
+        label: "Function",
+        help: "Lag varseltekst.",
+      },
+      {
+        label: "Action",
+        help: "Send push.",
+      },
+    ],
+    code: `// Function node: vask ferdig
+msg.payload = {
+  title: "Vask ferdig",
+  message: "Vaskemaskinen er ferdig. Tid for å henge opp!"
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Trigger node → Reset",
+        value: "Når effekt > 5W",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Varsel kommer aldri",
+        detail: "Juster terskel for lav effekt og varighet.",
+      },
+    ],
+  },
+  {
+    id: "trash-reminder",
+    title: "Søppeltømming påminnelse",
+    category: "Vedlikehold",
+    summary: "Send varsel dagen før tømming basert på kalender.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på kalender.sensor for avfall.",
+      },
+      {
+        label: "Function",
+        help: "Sjekk om det er tømming i morgen.",
+      },
+      {
+        label: "Action",
+        help: "Send påminnelse.",
+      },
+    ],
+    code: `// Function node: søppelvarsel
+const starts = msg.data?.new_state?.attributes?.start_time;
+if (!starts) return null;
+msg.payload = {
+  title: "Søppeltømming i morgen",
+  message: "Husk å sette ut dunkene."
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "calendar.avfall",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Feil dag",
+        detail: "Sjekk tidssone og start_time-format i kalenderen.",
+      },
+    ],
+  },
+  {
+    id: "window-open-notify",
+    title: "Vinduer åpne ved sengetid",
+    category: "Sikkerhet",
+    summary: "Sjekk åpne vinduer når nattmodus aktiveres.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "input_boolean.nattmodus eller bedtime trigger.",
+      },
+      {
+        label: "Function",
+        help: "Lag liste over åpne vinduer.",
+      },
+      {
+        label: "Action",
+        help: "Send varsel hvis noen vinduer er åpne.",
+      },
+    ],
+    code: `// Function node: finn åpne vinduer
+const open = msg.open_windows || [];
+if (open.length === 0) return null;
+msg.payload = {
+  title: "Åpne vinduer",
+  message: "Følgende vinduer er åpne: " + open.join(", ")
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Function → open_windows input",
+        value: "Bruk get-entities + filter på state = open",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Listen er tom",
+        detail: "Sjekk at du mapper friendly_name og state i get-entities.",
+      },
+    ],
+  },
+  {
+    id: "garage-light-follow",
+    title: "Garasjelys følger port",
+    category: "Lysstyring",
+    summary: "Slå på lys når port åpnes, slå av etter at port lukkes.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "cover.garasje open/closed.",
+      },
+      {
+        label: "Switch",
+        help: "Velg open/closed.",
+      },
+      {
+        label: "Action",
+        help: "Slå på ved open, slå av etter delay.",
+      },
+    ],
+    code: `// Function node: garasjelys
+msg.payload = { entity_id: "light.garasje", brightness_pct: 80 };
+return msg;`,
+    nextNodes: [
+      "Action node: light.turn_on",
+      "Trigger node: send off etter 10 min",
+      "Action node: light.turn_off",
+    ],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 10 minutter",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset går av for tidlig",
+        detail: "Øk delay eller reset trigger når port åpnes igjen.",
+      },
+    ],
+  },
+  {
+    id: "door-lock-reminder",
+    title: "Påminnelse: lås døren ved leggetid",
+    category: "Sikkerhet",
+    summary: "Hvis døren er ulåst ved nattmodus, send varsel.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Trigger på nattmodus.",
+      },
+      {
+        label: "Current state",
+        help: "Sjekk om lock.ytterdor er unlocked.",
+      },
+      {
+        label: "Function",
+        help: "Bygg varseltekst.",
+      },
+      {
+        label: "Action",
+        help: "Send push-varsel.",
+      },
+    ],
+    code: `// Function node: lås-dør varsel
+msg.payload = {
+  title: "Dør ulåst",
+  message: "Ytterdøren er ulåst. Vil du låse den?"
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Current state → Entity",
+        value: "lock.ytterdor",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Feil status",
+        detail: "Sjekk state-verdier: locked/unlocked i din lock-enhet.",
+      },
+    ],
+  },
+  {
+    id: "garage-ventilation",
+    title: "Ventiler garasje ved høy temperatur",
+    category: "Klima",
+    summary: "Slå på vifte når garasjen blir varm.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Sensor for temperatur i garasjen.",
+      },
+      {
+        label: "Function",
+        help: "Sjekk terskel og sett vifte on/off.",
+      },
+      {
+        label: "Action",
+        help: "switch.turn_on/off.",
+      },
+    ],
+    code: `// Function node: tempstyrt vifte
+const temp = Number(msg.payload);
+if (Number.isNaN(temp)) return null;
+msg.payload = { entity_id: "switch.garasjefan", state: temp > 28 ? "on" : "off" };
+return msg;`,
+    nextNodes: [
+      "Switch node på msg.payload.state",
+      "Action node: switch.turn_on",
+      "Action node: switch.turn_off",
+    ],
+    fields: [
+      {
+        name: "Temperatur terskel",
+        value: "28°C",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Vifte står på hele tiden",
+        detail: "Juster terskel eller legg inn hystereseter.",
+      },
+    ],
+  },
+  {
+    id: "intrusion-siren-delay",
+    title: "Innbrudd: forsinket sirene",
+    category: "Sikkerhet",
+    summary: "Gi 30 sekunder til å deaktivere alarm før sirene.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Sensor eller alarm som trigges.",
+      },
+      {
+        label: "Trigger",
+        help: "Vent 30 sek før sirene, reset ved disarm.",
+      },
+      {
+        label: "Function",
+        help: "Bygg sirene payload.",
+      },
+      {
+        label: "Action",
+        help: "Aktiver sirene.",
+      },
+    ],
+    code: `// Function node: sirene payload
+msg.payload = { entity_id: "siren.hjem", tone: "alarm" };
+return msg;`,
+    nextNodes: ["Action node: siren.turn_on"],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 30 sekunder",
+      },
+      {
+        name: "Trigger node → Reset",
+        value: "payload: \"disarmed\"",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Sirenen aktiveres med en gang",
+        detail: "Sjekk at Trigger er satt til å vente før sending.",
+      },
+    ],
+  },
+  {
+    id: "door-chime",
+    title: "Dørklokke-lyd på høyttaler",
+    category: "Varsling",
+    summary: "Spill av en lyd når døren åpnes.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Kontakt-sensor på ytterdør.",
+      },
+      {
+        label: "Function",
+        help: "Bygg media payload.",
+      },
+      {
+        label: "Action",
+        help: "media_player.play_media.",
+      },
+    ],
+    code: `// Function node: chime
+msg.payload = {
+  media_content_id: "/local/sounds/chime.mp3",
+  media_content_type: "music"
+};
+return msg;`,
+    nextNodes: ["Action node: media_player.play_media"],
+    fields: [
+      {
+        name: "Action node → Target",
+        value: "media_player.hoyttaler",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Ingen lyd",
+        detail: "Sjekk at filen finnes i /config/www/sounds.",
+      },
+    ],
+  },
+  {
+    id: "vacuum-start-away",
+    title: "Start robotstøvsuger når alle drar",
+    category: "Vedlikehold",
+    summary: "Automatisk støvsuging når huset er tomt.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på group.family går til not_home.",
+      },
+      {
+        label: "Function",
+        help: "Lag start-kommando.",
+      },
+      {
+        label: "Action",
+        help: "vacuum.start.",
+      },
+    ],
+    code: `// Function node: start støvsuger
+msg.payload = { entity_id: "vacuum.roborock" };
+return msg;`,
+    nextNodes: ["Action node: vacuum.start"],
+    fields: [
+      {
+        name: "Current state → State",
+        value: "not_home",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Støvsugeren starter ikke",
+        detail: "Sjekk at den ikke er allerede i drift eller trenger vedlikehold.",
+      },
+    ],
+  },
+  {
+    id: "party-mode-lights",
+    title: "Party-modus: scene + musikk",
+    category: "Scene",
+    summary: "En knapp som aktiverer scene og starter musikk.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "input_button.party_mode eller dashboard-knapp.",
+      },
+      {
+        label: "Function",
+        help: "Bygg payload for scene og musikk.",
+      },
+      {
+        label: "Action",
+        help: "scene.turn_on + media_player.play_media.",
+      },
+    ],
+    code: `// Function node: party payload
+msg.scene = { entity_id: "scene.party" };
+msg.payload = {
+  media_content_id: "spotify:playlist:party",
+  media_content_type: "music"
+};
+return msg;`,
+    nextNodes: [
+      "Action node: scene.turn_on",
+      "Action node: media_player.play_media",
+    ],
+    fields: [
+      {
+        name: "Action node → Target",
+        value: "media_player.stue",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Musikk starter ikke",
+        detail: "Sjekk at Spotify-integrasjonen er autentisert.",
+      },
+    ],
+  },
+  {
+    id: "fridge-door-alert",
+    title: "Kjøleskapdør åpen-varsel",
+    category: "Varsling",
+    summary: "Varsle hvis kjøleskapsdøren blir stående åpen.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Kontakt-sensor på kjøleskap.",
+      },
+      {
+        label: "Trigger",
+        help: "Vent 3 minutter før varsel.",
+      },
+      {
+        label: "Function",
+        help: "Lag varseltekst.",
+      },
+      {
+        label: "Action",
+        help: "Send push.",
+      },
+    ],
+    code: `// Function node: kjøleskapsvarsel
+msg.payload = {
+  title: "Kjøleskapdør åpen",
+  message: "Døren har stått åpen i 3 minutter."
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 3 minutter",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Varsel spam",
+        detail: "Sjekk at Trigger resettes når døren lukkes.",
+      },
+    ],
+  },
+  {
+    id: "driveway-light",
+    title: "Innkjørsel: lys ved bil ankomst",
+    category: "Lysstyring",
+    summary: "Tenn innkjørselslys når bil kommer hjem etter mørkets frembrudd.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på device_tracker for bil.",
+      },
+      {
+        label: "Time range",
+        help: "Kun etter solnedgang.",
+      },
+      {
+        label: "Function",
+        help: "Sett lysnivå.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on innkjørsel.",
+      },
+    ],
+    code: `// Function node: innkjørselslys
+msg.payload = { brightness_pct: 80 };
+return msg;`,
+    nextNodes: ["Action node: light.turn_on"],
+    fields: [
+      {
+        name: "Action node → Target",
+        value: "light.innkjorsel",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset tennes ikke",
+        detail: "Sjekk at device_tracker oppdateres raskt nok.",
+      },
+    ],
+  },
+  {
+    id: "sunset-scenes",
+    title: "Solnedgang: aktiver kveldsscene",
+    category: "Scene",
+    summary: "Aktiver en scene ved solnedgang.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "sun.sun går til below_horizon.",
+      },
+      {
+        label: "Function",
+        help: "Logg og sett scene.",
+      },
+      {
+        label: "Action",
+        help: "scene.turn_on.",
+      },
+    ],
+    code: `// Function node: kveldsscene
+msg.payload = { entity_id: "scene.kveld" };
+return msg;`,
+    nextNodes: ["Action node: scene.turn_on"],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "sun.sun",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Scene aktiveres ikke",
+        detail: "Sjekk at scenen finnes og at navnet er riktig.",
+      },
+    ],
+  },
+  {
+    id: "nightlight-bathroom",
+    title: "Nattlys på badet",
+    category: "Lysstyring",
+    summary: "Om natten tennes svakt lys ved bevegelse på badet.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Bevegelse på badet.",
+      },
+      {
+        label: "Time range",
+        help: "Nattvindu for lav lysstyrke.",
+      },
+      {
+        label: "Function",
+        help: "Sett lav brightness.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on.",
+      },
+    ],
+    code: `// Function node: nattlys
+msg.payload = { brightness_pct: 10, kelvin: 2200 };
+return msg;`,
+    nextNodes: ["Action node: light.turn_on"],
+    fields: [
+      {
+        name: "Time range → From",
+        value: "23:00",
+      },
+      {
+        name: "Time range → To",
+        value: "06:00",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Lyset blir for sterkt",
+        detail: "Reduser brightness_pct i Function-noden.",
+      },
+    ],
+  },
+  {
+    id: "door-open-while-away",
+    title: "Varsel hvis dør åpnes mens du er borte",
+    category: "Sikkerhet",
+    summary: "Hvis noen åpner døren når alle er borte, send kritisk varsel.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Kontakt-sensor på ytterdør.",
+      },
+      {
+        label: "Current state",
+        help: "Sjekk at group.family er not_home.",
+      },
+      {
+        label: "Function",
+        help: "Bygg kritisk varsel.",
+      },
+      {
+        label: "Action",
+        help: "Send push-varsel.",
+      },
+    ],
+    code: `// Function node: kritisk varsel
+msg.payload = {
+  title: "Dør åpnet!",
+  message: "Ytterdøren ble åpnet mens ingen er hjemme.",
+  data: { priority: "high", tag: "away-door" }
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Current state → Entity",
+        value: "group.family",
+      },
+      {
+        name: "Current state → State",
+        value: "not_home",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Varsel sendes også når du er hjemme",
+        detail: "Sjekk at Current state er koblet før Function.",
+      },
+    ],
+  },
+  {
+    id: "garden-watering-alert",
+    title: "Varsel ved langvarig regn (stopp vanning)",
+    category: "Hage",
+    summary: "Avlys vanning når regn registreres over tid.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Sensor for regn eller vær.",
+      },
+      {
+        label: "Trigger",
+        help: "Vent 30 min med regn før stopp.",
+      },
+      {
+        label: "Function",
+        help: "Bygg payload til bryter.",
+      },
+      {
+        label: "Action",
+        help: "switch.turn_off for vanning.",
+      },
+    ],
+    code: `// Function node: stopp vanning
+msg.payload = { entity_id: "switch.vanning" };
+return msg;`,
+    nextNodes: ["Action node: switch.turn_off"],
+    fields: [
+      {
+        name: "Trigger node → Send",
+        value: "Etter 30 minutter regn",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Vanning stopper ikke",
+        detail: "Sjekk at regn-sensoren har riktig state (rainy/on).",
+      },
+    ],
+  },
+  {
+    id: "morning-briefing",
+    title: "Morgensammendrag på høyttaler",
+    category: "Varsling",
+    summary: "Gi deg vær, kalender og varsel på morgenen.",
+    flow: [
+      {
+        label: "Inject",
+        help: "Start kl 07:00 på hverdager.",
+      },
+      {
+        label: "Function",
+        help: "Sett sammen tekst med vær og kalender.",
+      },
+      {
+        label: "Action",
+        help: "TTS til høyttaler.",
+      },
+    ],
+    code: `// Function node: morgenbrief
+msg.payload = {
+  message: "God morgen! Været i dag er sol og 8 grader. Du har 2 avtaler."
+};
+return msg;`,
+    nextNodes: ["Action node: tts.cloud_say"],
+    fields: [
+      {
+        name: "Inject → Time",
+        value: "07:00 (man-fre)",
+      },
+      {
+        name: "Action node → Target",
+        value: "media_player.kjokken",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "TTS spiller ikke",
+        detail: "Sjekk at volum ikke er 0 og at høyttaler er online.",
+      },
+    ],
+  },
+  {
+    id: "window-open-ac",
+    title: "AC av når vindu åpnes",
+    category: "Klima",
+    summary: "Slå av AC når vinduer åpnes for å spare strøm.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Vindu-sensor open/closed.",
+      },
+      {
+        label: "Function",
+        help: "Sett hvac_mode off ved open.",
+      },
+      {
+        label: "Action",
+        help: "climate.set_hvac_mode.",
+      },
+    ],
+    code: `// Function node: AC av ved åpent vindu
+msg.payload = { hvac_mode: "off" };
+return msg;`,
+    nextNodes: ["Action node: climate.set_hvac_mode"],
+    fields: [
+      {
+        name: "Action node → Entity",
+        value: "climate.stue",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "AC slås ikke av",
+        detail: "Sjekk at klimaanlegget støtter hvac_mode.",
+      },
+    ],
+  },
+  {
+    id: "power-outage-alert",
+    title: "Strømbrudd-varsling via UPS",
+    category: "Varsling",
+    summary: "Send varsel når UPS går på batteri.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "sensor.ups_status går til on_battery.",
+      },
+      {
+        label: "Function",
+        help: "Bygg varseltekst.",
+      },
+      {
+        label: "Action",
+        help: "Send kritisk varsel.",
+      },
+    ],
+    code: `// Function node: strømbrudd
+msg.payload = {
+  title: "Strømbrudd",
+  message: "UPS kjører på batteri.",
+  data: { priority: "high" }
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "sensor.ups_status",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "UPS-status endrer seg ikke",
+        detail: "Sjekk at UPS-integrasjonen rapporterer state korrekt.",
+      },
+    ],
+  },
+  {
+    id: "garage-temperature-alert",
+    title: "Garasje: frostvarsling",
+    category: "Varsling",
+    summary: "Varsle hvis temperaturen i garasjen går under 2°C.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "sensor.garasje_temp.",
+      },
+      {
+        label: "Function",
+        help: "Sjekk terskel og bygg varsel.",
+      },
+      {
+        label: "Action",
+        help: "Send varsel.",
+      },
+    ],
+    code: `// Function node: frostvarsel
+const temp = Number(msg.payload);
+if (Number.isNaN(temp) || temp > 2) return null;
+msg.payload = {
+  title: "Frostfare i garasje",
+  message: "Temperaturen er " + temp + "°C."
+};
+return msg;`,
+    nextNodes: ["Action node: notify.mobile_app_<telefon>"],
+    fields: [
+      {
+        name: "Temperatur terskel",
+        value: "2°C",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Varsel sendes ikke",
+        detail: "Sjekk at sensoren rapporterer i °C og ikke °F.",
+      },
+    ],
+  },
+  {
+    id: "evening-shutdown",
+    title: "Kveld: slå av alt unødvendig",
+    category: "Energi",
+    summary: "Når nattmodus aktiveres, slå av TV, lys og standby.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "input_boolean.nattmodus går til on.",
+      },
+      {
+        label: "Function",
+        help: "Bygg payload for flere enheter.",
+      },
+      {
+        label: "Action",
+        help: "Slå av lys, TV og brytere.",
+      },
+    ],
+    code: `// Function node: kveldsavslag
+msg.payload = { entity_id: ["light.all_lights", "switch.tv", "switch.standby"] };
+return msg;`,
+    nextNodes: ["Action node: homeassistant.turn_off"],
+    fields: [
+      {
+        name: "Action node → Service",
+        value: "homeassistant.turn_off",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Enheter blir ikke slått av",
+        detail: "Sjekk at entity_id-listen er gyldig og at domenet støttes.",
+      },
+    ],
+  },
+  {
+    id: "holiday-lights",
+    title: "Ferielys basert på kalender",
+    category: "Scene",
+    summary: "Tenn julelys automatisk når feriekalenderen er aktiv.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på calendar.ferie.",
+      },
+      {
+        label: "Switch",
+        help: "on/off basert på kalenderstatus.",
+      },
+      {
+        label: "Action",
+        help: "light.turn_on/off på julelys.",
+      },
+    ],
+    code: `// Function node: julelys
+msg.payload = { entity_id: "light.julelys" };
+return msg;`,
+    nextNodes: [
+      "Action node: light.turn_on",
+      "Action node: light.turn_off",
+    ],
+    fields: [
+      {
+        name: "Events: state → Entity",
+        value: "calendar.ferie",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Kalender trigges ikke",
+        detail: "Sjekk at kalender-integrasjonen er konfigurert og aktiv.",
+      },
+    ],
+  },
 ];
 
 const state = {
