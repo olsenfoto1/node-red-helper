@@ -1097,6 +1097,158 @@ return msg;`,
     ],
   },
   {
+    id: "night-door-alert",
+    title: "Nattvarsel ved dør som åpnes",
+    category: "Sikkerhet",
+    summary: "Send varsling og slå på lys hvis ytterdør åpnes om natten.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på binary_sensor.door eller tilsvarende kontakt.",
+      },
+      {
+        label: "Time range",
+        help: "Sett tidsvindu, f.eks. 23:00–06:00.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst og evt. lysnivå.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: send varsel og slå på utelys.",
+      },
+    ],
+    code: `// Function node: nattvarsel
+msg.payload = {
+  title: "Nattvarsel",
+  message: "Ytterdøren ble åpnet etter leggetid.",
+  data: { tag: "night-door-alert" }
+};
+msg.lights = { entity_id: "light.ute", brightness_pct: 100 };
+return msg;`,
+    nextNodes: [
+      "Action node: notify.mobile_app_<telefon>",
+      "Action node: light.turn_on",
+    ],
+    fields: [
+      {
+        name: "Time range → Start",
+        value: "23:00",
+      },
+      {
+        name: "Time range → Slutt",
+        value: "06:00",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Varsel sendes midt på dagen",
+        detail: "Kontroller at Time range er riktig og at sensoren bare sender on ved åpning.",
+      },
+    ],
+  },
+  {
+    id: "leak-shutoff",
+    title: "Vannlekkasje: steng hovedkran",
+    category: "Sikkerhet",
+    summary: "Steng vannet og send varsel når lekkasjesensor trigges.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på lekkasjesensor, f.eks. binary_sensor.leak_kjokken.",
+      },
+      {
+        label: "Switch",
+        help: "Filtrer på state = on.",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: steng water valve og send varsling.",
+      },
+    ],
+    code: `// Function node: lekkasjevarsel
+msg.payload = {
+  title: "Vannlekkasje",
+  message: "Lekkasjesensor trigget. Hovedkran stenges.",
+  data: { tag: "leak-shutoff" }
+};
+return msg;`,
+    nextNodes: [
+      "Action node: valve.close",
+      "Action node: notify.mobile_app_<telefon>",
+    ],
+    fields: [
+      {
+        name: "Action node → Service",
+        value: "valve.close",
+      },
+      {
+        name: "Action node → Target",
+        value: "valve.main_water",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Kranen reagerer ikke",
+        detail: "Sjekk at ventil-entity støtter valve.close eller bruk switch.turn_off.",
+      },
+    ],
+  },
+  {
+    id: "smoke-siren",
+    title: "Røykalarm: sirene + alle lys",
+    category: "Sikkerhet",
+    summary: "Når røykvarsler går av: aktiver sirene, tenn lys og send varsler.",
+    flow: [
+      {
+        label: "Events: state",
+        help: "Lytt på røykvarsler sensor (smoke/CO).",
+      },
+      {
+        label: "Switch",
+        help: "Filtrer på alarm state (on/alarm).",
+      },
+      {
+        label: "Change/Function",
+        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+      },
+      {
+        label: "Action",
+        help: "Home Assistant Action node: aktiver sirene, tenn alle lys og send varsel.",
+      },
+    ],
+    code: `// Function node: røykalarm
+msg.payload = {
+  title: "Røykalarm!",
+  message: "Røykdeteksjon i huset. Evakuer og sjekk sensorer.",
+  data: { priority: "high" }
+};
+msg.lights = { entity_id: "light.all_lights", brightness_pct: 100 };
+return msg;`,
+    nextNodes: [
+      "Action node: siren.turn_on",
+      "Action node: light.turn_on",
+      "Action node: notify.mobile_app_<telefon>",
+    ],
+    fields: [
+      {
+        name: "Action node → Service",
+        value: "siren.turn_on",
+      },
+    ],
+    troubleshoot: [
+      {
+        title: "Sirene støttes ikke",
+        detail: "Bruk en media_player.play_media eller en notify med TTS som fallback.",
+      },
+    ],
+  },
+  {
     id: "mailbox-alert",
     title: "Postkasse-varsel",
     category: "Varsling",
@@ -2864,80 +3016,6 @@ return msg;`,
     ],
   },
 ];
-
-const desiredRecipeCount = 100;
-const extraCategoryPool = [
-  "Hverdags",
-  "Energi",
-  "Komfort",
-  "Media",
-  "Vedlikehold",
-  "Sikkerhet",
-  "Lysstyring",
-  "Klima",
-  "Dashboard",
-];
-
-function buildExtraRecipe(index, offset) {
-  const number = index + 1;
-  const category = extraCategoryPool[index % extraCategoryPool.length];
-  const label = `Ekstra flow ${number}`;
-
-  return {
-    id: `extra-flow-${offset + number}`,
-    title: `${label}: rask oppskrift`,
-    category,
-    summary: `Ekstra eksempel for ${category.toLowerCase()} som gir flere valg i biblioteket.`,
-    flow: [
-      {
-        label: "Events: state",
-        help: "Velg en sensor eller entitet som trigger flowen.",
-      },
-      {
-        label: "Change/Function",
-        help: "Tilpass payload, legg på metadata eller bygg en tekststreng.",
-      },
-      {
-        label: "Action",
-        help: "Kall Home Assistant service med msg.payload som data.",
-      },
-    ],
-    code: `// Function node: ekstra eksempel ${number}
-msg.payload = {
-  title: "${label}",
-  message: "Dette er en generert flow (#${number}).",
-  data: { tag: "extra-${number}" }
-};
-return msg;`,
-    nextNodes: [
-      "Action node: notify.mobile_app_<telefon>",
-      "Optional: Switch node for videre logikk",
-    ],
-    fields: [
-      {
-        name: "Action node → Service",
-        value: "notify.mobile_app_<telefon>",
-      },
-      {
-        name: "Action node → Data type",
-        value: "JSONata (Expression)",
-      },
-    ],
-    troubleshoot: [
-      {
-        title: "Varsel dukker ikke opp",
-        detail: "Sjekk at notify-tjenesten er riktig og at mobilen er online.",
-      },
-    ],
-  };
-}
-
-if (recipes.length < desiredRecipeCount) {
-  const missing = desiredRecipeCount - recipes.length;
-  const offset = recipes.length;
-  const extras = Array.from({ length: missing }, (_, index) => buildExtraRecipe(index, offset));
-  recipes.push(...extras);
-}
 
 const state = {
   search: "",
