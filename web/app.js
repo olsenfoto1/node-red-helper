@@ -348,20 +348,9 @@ function showFlowHelp(index) {
   const step = activeFlow[index];
   if (!step) return;
 
-  const showFunctionSnippet = step.label.toLowerCase().includes("function") && activeRecipe?.code;
-  const functionSnippet = showFunctionSnippet
-    ? `
-      <div class="code-block">
-        <button class="copy" data-copy-text="${escapeAttribute(activeRecipe.code)}">Kopier</button>
-        <pre><code>${escapeHtml(activeRecipe.code)}</code></pre>
-      </div>
-    `
-    : "";
-
   detailFlowHelp.innerHTML = `
     <p class="flow-help-title">${step.label}</p>
     <p>${step.help}</p>
-    ${functionSnippet}
   `;
 
   [...detailFlow.querySelectorAll(".flow-node")].forEach((node) => {
@@ -418,9 +407,14 @@ function showDetail(recipeId) {
 }
 
 function copyText(text) {
-  navigator.clipboard.writeText(text).catch(() => {
-    window.prompt("Kopier manuelt:", text);
-  });
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    navigator.clipboard.writeText(text).catch(() => {
+      window.prompt("Kopier manuelt:", text);
+    });
+    return;
+  }
+
+  window.prompt("Kopier manuelt:", text);
 }
 
 document.addEventListener("click", (event) => {
