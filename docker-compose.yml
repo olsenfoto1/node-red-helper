@@ -1,0 +1,7 @@
+services:
+  node-red-helper:
+    build: .
+    container_name: node-red-helper
+    ports:
+      - "8080:80"
+    restart: unless-stopped
