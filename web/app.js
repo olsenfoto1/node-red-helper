@@ -12,7 +12,7 @@ const recipes = [
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Klikk Kopier for å lime inn koden i Function-noden og bygg payload med actions.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Klikk Kopier for å lime inn koden i Function-noden og bygg payload med actions.",
       },
       {
         label: "Action",
@@ -102,7 +102,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Rens msg.payload og legg på metadata før neste steg.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Rens msg.payload og legg på metadata før neste steg.",
       },
       {
         label: "Action",
@@ -147,7 +147,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag en lesbar statusstreng i msg.payload.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag en lesbar statusstreng i msg.payload.",
       },
       {
         label: "UI / Action",
@@ -196,7 +196,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Legg inn offset og target før du sender videre.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Legg inn offset og target før du sender videre.",
       },
       {
         label: "Switch",
@@ -363,7 +363,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag varseltekst med knapp for å deaktivere.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag varseltekst med knapp for å deaktivere.",
       },
       {
         label: "Action",
@@ -420,7 +420,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg notify med bilde-URL.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg notify med bilde-URL.",
       },
       {
         label: "Action",
@@ -461,7 +461,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Merk alarmnivå og lokasjon.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Merk alarmnivå og lokasjon.",
       },
       {
         label: "Action",
@@ -509,7 +509,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg alarmtekst og legg på TTS.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg alarmtekst og legg på TTS.",
       },
       {
         label: "Action",
@@ -562,7 +562,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Velg tilfeldig lys og av/på.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Velg tilfeldig lys og av/på.",
       },
       {
         label: "Action",
@@ -611,7 +611,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og sett brightness.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk terskel og sett brightness.",
       },
       {
         label: "Action",
@@ -656,7 +656,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett brightness basert på tid.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett brightness basert på tid.",
       },
       {
         label: "Action",
@@ -696,7 +696,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg sequence for brightness over tid.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg sequence for brightness over tid.",
       },
       {
         label: "Delay",
@@ -791,7 +791,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett input_boolean.manual_override i 30 minutter.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett input_boolean.manual_override i 30 minutter.",
       },
       {
         label: "Action",
@@ -842,7 +842,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett flash og lysnivå.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett flash og lysnivå.",
       },
       {
         label: "Action",
@@ -886,7 +886,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett payload for lys, sirene og varsling.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett payload for lys, sirene og varsling.",
       },
       {
         label: "Action",
@@ -982,7 +982,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload for lås og lys.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg payload for lås og lys.",
       },
       {
         label: "Action",
@@ -1030,7 +1030,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett lysnivå og varme.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett lysnivå og varme.",
       },
       {
         label: "Action",
@@ -1112,7 +1112,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst og evt. lysnivå.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varseltekst og evt. lysnivå.",
       },
       {
         label: "Action",
@@ -1164,7 +1164,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varseltekst.",
       },
       {
         label: "Action",
@@ -1215,7 +1215,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varseltekst.",
       },
       {
         label: "Action",
@@ -1260,7 +1260,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst og logg tid.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varseltekst og logg tid.",
       },
       {
         label: "Action",
@@ -1300,7 +1300,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag varsel med lenke til kamera.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag varsel med lenke til kamera.",
       },
       {
         label: "Action",
@@ -1379,7 +1379,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og bygg mål.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk terskel og bygg mål.",
       },
       {
         label: "Action",
@@ -1417,7 +1417,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Filtrer entiteter og lag rapporttekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Filtrer entiteter og lag rapporttekst.",
       },
       {
         label: "Action",
@@ -1467,7 +1467,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload for avslag.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg payload for avslag.",
       },
       {
         label: "Action",
@@ -1507,7 +1507,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett priority eller channel basert på tid.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett priority eller channel basert på tid.",
       },
       {
         label: "Action",
@@ -1553,7 +1553,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og delta.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk terskel og delta.",
       },
       {
         label: "Action",
@@ -1595,7 +1595,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk ppm og bygg varsel.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk ppm og bygg varsel.",
       },
       {
         label: "Action",
@@ -1640,7 +1640,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag varseltekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag varseltekst.",
       },
       {
         label: "Action",
@@ -1679,7 +1679,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk om det er tømming i morgen.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk om det er tømming i morgen.",
       },
       {
         label: "Action",
@@ -1720,7 +1720,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag liste over åpne vinduer.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag liste over åpne vinduer.",
       },
       {
         label: "Action",
@@ -1805,7 +1805,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varseltekst.",
       },
       {
         label: "Action",
@@ -1844,7 +1844,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og sett vifte on/off.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk terskel og sett vifte on/off.",
       },
       {
         label: "Action",
@@ -1890,7 +1890,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg sirene payload.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg sirene payload.",
       },
       {
         label: "Action",
@@ -1930,7 +1930,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg media payload.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg media payload.",
       },
       {
         label: "Action",
@@ -1969,7 +1969,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag start-kommando.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag start-kommando.",
       },
       {
         label: "Action",
@@ -2005,7 +2005,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload for scene og musikk.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg payload for scene og musikk.",
       },
       {
         label: "Action",
@@ -2052,7 +2052,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag varseltekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag varseltekst.",
       },
       {
         label: "Action",
@@ -2095,7 +2095,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett lysnivå.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett lysnivå.",
       },
       {
         label: "Action",
@@ -2131,7 +2131,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Logg og sett scene.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Logg og sett scene.",
       },
       {
         label: "Action",
@@ -2171,7 +2171,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett lav brightness.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett lav brightness.",
       },
       {
         label: "Action",
@@ -2215,7 +2215,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg kritisk varsel.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg kritisk varsel.",
       },
       {
         label: "Action",
@@ -2263,7 +2263,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload til bryter.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg payload til bryter.",
       },
       {
         label: "Action",
@@ -2299,7 +2299,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett sammen tekst med vær og kalender.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett sammen tekst med vær og kalender.",
       },
       {
         label: "Action",
@@ -2341,7 +2341,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett hvac_mode off ved open.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett hvac_mode off ved open.",
       },
       {
         label: "Action",
@@ -2377,7 +2377,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varseltekst.",
       },
       {
         label: "Action",
@@ -2417,7 +2417,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og bygg varsel.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk terskel og bygg varsel.",
       },
       {
         label: "Action",
@@ -2458,7 +2458,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload for flere enheter.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg payload for flere enheter.",
       },
       {
         label: "Action",
@@ -2533,7 +2533,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og bygg payload.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk terskel og bygg payload.",
       },
       {
         label: "Switch",
@@ -2579,7 +2579,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk pris og bygg payload.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk pris og bygg payload.",
       },
       {
         label: "Switch",
@@ -2625,7 +2625,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sjekk terskel og bygg payload.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sjekk terskel og bygg payload.",
       },
       {
         label: "Switch",
@@ -2675,7 +2675,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett temperatur for natt og dag.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett temperatur for natt og dag.",
       },
       {
         label: "Action",
@@ -2711,7 +2711,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg payload for scene og musikk.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg payload for scene og musikk.",
       },
       {
         label: "Action",
@@ -2754,7 +2754,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett scene entity_id basert på knapp.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett scene entity_id basert på knapp.",
       },
       {
         label: "Action",
@@ -2799,7 +2799,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Lag liste over soner.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Lag liste over soner.",
       },
       {
         label: "Split + Delay",
@@ -2847,7 +2847,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg liste over IP-er.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg liste over IP-er.",
       },
       {
         label: "Split",
@@ -2899,7 +2899,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varseltekst.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varseltekst.",
       },
       {
         label: "Action",
@@ -2941,7 +2941,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Sett flagg i flow context.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Sett flagg i flow context.",
       },
       {
         label: "Switch",
@@ -2985,7 +2985,7 @@ return msg;`,
       },
       {
         label: "Change/Function",
-        help: "Bruk Change node hvis du bare setter payload; Function kun ved logikk. Bygg varsel eller backup-kommando.",
+        help: "Bruk Change node når du kun setter msg.payload direkte (streng eller objektet som neste node trenger). Bruk Function node når du må bygge payload fra msg eller bruke logikk. Bygg varsel eller backup-kommando.",
       },
       {
         label: "Action",
