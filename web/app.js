@@ -249,44 +249,49 @@ return msg;`,
         help: "Lytt på dør- eller port-sensor som går til open.",
       },
       {
-        label: "Trigger",
-        help: "Send videre etter X minutter, og reset hvis døren lukkes.",
+        label: "Delay",
+        help: "Vent i X minutter før meldingen sendes videre.",
       },
       {
-        label: "Function",
-        help: "Lag meldingspayload med rom, tid og alvorlighet.",
+        label: "Current state",
+        help: "Sjekk at døren fortsatt står open før du varsler.",
       },
       {
         label: "Action",
-        help: "Send varsel til mobil eller høyttaler.",
+        help: "Send varsel til mobil eller høyttaler med tittel og tekst.",
       },
     ],
-    code: `// Function node: bygg varsel
-const name = msg.data?.new_state?.attributes?.friendly_name || msg.entity_id;
-msg.payload = {
-  title: "Dør står åpen",
-  message: name + " har stått åpen i 10 minutter.",
-  data: { tag: "door-open", priority: "high" }
-};
-return msg;`,
+    code: `// Ingen Function node nødvendig for denne flowen.`,
     nextNodes: [
       "Action node: notify.mobile_app_<telefon>",
-      "Optional: TTS til høyttaler",
+      "Optional: notify.alexa_media eller tts.google_translate_say",
     ],
     fields: [
       {
-        name: "Trigger node → Send",
-        value: "Etter 10 minutter",
+        name: "Delay node → Pause",
+        value: "10 minutter",
       },
       {
-        name: "Trigger node → Reset with",
-        value: "payload: \"off\" (eller closed)",
+        name: "Current state → Entity",
+        value: "binary_sensor.<dør_sensor>",
+      },
+      {
+        name: "Current state → If state is",
+        value: "on (eller open)",
+      },
+      {
+        name: "Action node → Service",
+        value: "notify.mobile_app_<telefon>",
+      },
+      {
+        name: "Action node → Data",
+        value: "{ \"title\": \"Dør står åpen\", \"message\": \"<navn> har stått åpen i 10 minutter.\" }",
       },
     ],
     troubleshoot: [
       {
         title: "Varsel sendes selv om døren lukkes",
-        detail: "Sjekk at Trigger resettes når sensor går til closed/off.",
+        detail: "Sjekk at Current state sjekker riktig sensor og at tilstanden er open/on når den står åpen.",
       },
     ],
   },
