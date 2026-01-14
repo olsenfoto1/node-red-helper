@@ -110,7 +110,7 @@ return msg;`,
       },
     ],
     code: `// Function node: lag en ren payload
-type = msg.payload;
+const type = msg.payload;
 msg.payload = {
   sensor: msg.entity_id,
   state: type,
