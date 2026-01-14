@@ -260,9 +260,11 @@ const detailCode = document.getElementById("detailCode");
 const detailNext = document.getElementById("detailNext");
 const detailFields = document.getElementById("detailFields");
 const detailTroubleshoot = document.getElementById("detailTroubleshoot");
+const detailCodeBlock = document.getElementById("detailCodeBlock");
 const toast = document.getElementById("toast");
 let activeFlow = [];
 let activeRecipe = null;
+let activeFlowIndex = null;
 
 function renderCategories() {
   const categories = [...new Set(recipes.map((recipe) => recipe.category))];
@@ -349,10 +351,16 @@ function showFlowHelp(index) {
   const step = activeFlow[index];
   if (!step) return;
 
+  activeFlowIndex = index;
   detailFlowHelp.innerHTML = `
     <p class="flow-help-title">${step.label}</p>
     <p>${step.help}</p>
   `;
+
+  if (detailCodeBlock) {
+    const showCode = step.label.toLowerCase().includes("function");
+    detailCodeBlock.hidden = !showCode;
+  }
 
   [...detailFlow.querySelectorAll(".flow-node")].forEach((node) => {
     node.classList.toggle("active", Number(node.dataset.flowIndex) === index);
@@ -360,9 +368,13 @@ function showFlowHelp(index) {
 }
 
 function showFlowHelpPlaceholder() {
+  activeFlowIndex = null;
   detailFlowHelp.innerHTML = `
     <p class="muted">Klikk på en node for å se hjelpetekst.</p>
   `;
+  if (detailCodeBlock) {
+    detailCodeBlock.hidden = true;
+  }
   [...detailFlow.querySelectorAll(".flow-node")].forEach((node) => {
     node.classList.remove("active");
   });
