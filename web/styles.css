@@ -12,7 +12,9 @@
 body {
   margin: 0;
   padding: 0 0 4rem;
-  background: linear-gradient(160deg, #10131f, #0b0d14);
+  background: radial-gradient(circle at top left, rgba(98, 137, 255, 0.18), transparent 45%),
+    radial-gradient(circle at top right, rgba(233, 96, 255, 0.16), transparent 50%),
+    linear-gradient(160deg, #0e111c, #090b12 60%);
 }
 
 h1,
@@ -36,10 +38,11 @@ p {
 }
 
 .hero-card {
-  background: #1a1e2d;
+  background: rgba(26, 30, 45, 0.92);
   padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid #2a3042;
+  box-shadow: 0 20px 40px rgba(5, 7, 16, 0.4);
 }
 
 .lead {
@@ -85,6 +88,7 @@ select {
   border-radius: 10px;
   padding: 0.6rem 0.8rem;
   min-width: 240px;
+  box-shadow: inset 0 0 0 1px rgba(124, 140, 255, 0.08);
 }
 
 .grid {
@@ -94,7 +98,7 @@ select {
 }
 
 .card {
-  background: #151929;
+  background: linear-gradient(145deg, rgba(20, 24, 38, 0.95), rgba(16, 19, 32, 0.95));
   border-radius: 16px;
   padding: 1.25rem;
   border: 1px solid #232a3b;
@@ -106,7 +110,7 @@ select {
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 18px 50px rgba(6, 8, 16, 0.45);
 }
 
 .card .badge {
@@ -123,13 +127,20 @@ select {
 }
 
 button {
-  background: #6b5cff;
+  background: linear-gradient(135deg, #6b5cff, #4f7bff);
   color: white;
   border: none;
   border-radius: 10px;
   padding: 0.5rem 0.9rem;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(71, 96, 255, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(71, 96, 255, 0.35);
 }
 
 button.ghost {
@@ -144,10 +155,11 @@ button.ghost {
 
 .detail {
   margin-top: 3rem;
-  background: #111523;
+  background: linear-gradient(160deg, rgba(18, 21, 36, 0.98), rgba(14, 18, 31, 0.98));
   border: 1px solid #242b3d;
   border-radius: 18px;
   padding: 2rem;
+  box-shadow: 0 30px 60px rgba(6, 8, 16, 0.5);
 }
 
 .detail-content {
@@ -157,7 +169,7 @@ button.ghost {
 }
 
 .panel {
-  background: #151a2b;
+  background: linear-gradient(160deg, rgba(21, 26, 43, 0.95), rgba(19, 23, 38, 0.95));
   border-radius: 16px;
   padding: 1.5rem;
   border: 1px solid #242b3d;
@@ -165,11 +177,12 @@ button.ghost {
 
 .code-block {
   position: relative;
-  background: #0b0e16;
+  background: #0b0f1c;
   border-radius: 16px;
   border: 1px solid #212741;
   padding: 1rem;
   overflow-x: auto;
+  box-shadow: inset 0 0 0 1px rgba(94, 114, 255, 0.08);
 }
 
 .code-block pre {
@@ -190,6 +203,60 @@ button.ghost {
   text-align: center;
   color: #8b94b8;
   font-size: 0.85rem;
+}
+
+.flow-diagram {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  background: rgba(15, 19, 32, 0.9);
+  border-radius: 18px;
+  border: 1px solid #242b3d;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.flow-node {
+  background: #25304a;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 0.65rem 1rem;
+  min-width: 160px;
+  font-weight: 600;
+  color: #e6edff;
+  box-shadow: inset 0 0 0 1px rgba(111, 143, 255, 0.2);
+}
+
+.flow-node.active {
+  background: #3d6aff;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 16px 30px rgba(61, 106, 255, 0.35);
+}
+
+.flow-arrow {
+  color: #6f7ba3;
+  font-size: 1.4rem;
+  flex: 0 0 auto;
+}
+
+.flow-help {
+  background: rgba(20, 24, 40, 0.9);
+  border-radius: 14px;
+  border: 1px solid #2a334c;
+  padding: 1rem 1.25rem;
+  color: #cdd6ff;
+}
+
+.flow-help-title {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.flow-help .muted {
+  margin: 0;
+  color: #9aa6c7;
 }
 
 @media (max-width: 900px) {
