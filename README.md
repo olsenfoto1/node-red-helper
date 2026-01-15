@@ -8,6 +8,13 @@ En enkel, selvhostet katalog med Node-RED oppskrifter og copy/paste-kode for Hom
 - Kopierbare felter for Action node / Events node.
 - Feilsøking for vanlige problemer (f.eks. actionable notifications).
 
+## Home Assistant Add-on
+
+1. Gå til **Innstillinger → Add-ons → Add-on Store → ⋮ → Repositories**.
+2. Legg til repo-URL: `https://github.com/olsenfoto1/node-red-helper`.
+3. Finn **Node-RED Helper** i listen og installer.
+4. Start add-on og åpne `http://<home-assistant-host>:8123/`.
+
 ## Kom i gang lokalt
 
 ```bash

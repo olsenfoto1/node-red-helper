@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Node-RED Helper</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Node-RED Helper</p>
+        <h1>Bygg raskere automasjoner i Node-RED</h1>
+        <p class="lead">
+          Velg en oppskrift, kopier ferdig kode og få steg-for-steg veiledning om hvilke noder du trenger før og
+          etter function-noden.
+        </p>
+      </div>
+      <div class="hero-card">
+        <h2>Hvordan bruke dette</h2>
+        <ol>
+          <li>Velg en oppskrift i listen.</li>
+          <li>Klikk <strong>Kopier</strong> for å lime koden inn i en Function node.</li>
+          <li>Følg node-listen for å bygge flowen fra start til slutt.</li>
+        </ol>
+        <p class="tip">Tips: alle felter som trenger tekst har en ferdig copy/paste-verdi.</p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <div class="content-row">
+        <aside class="category-panel">
+          <h2>Kategorier</h2>
+          <div class="category-list" id="categoryList"></div>
+        </aside>
+        <div class="content">
+          <section class="filters">
+            <label>
+              Søk
+              <input id="search" type="search" placeholder="Søk etter varsling, sensor, logikk..." />
+            </label>
+          </section>
+
+          <section class="grid" id="recipeGrid"></section>
+        </div>
+      </div>
+
+      <section class="detail" id="detail" hidden>
+        <button class="ghost" id="closeDetail" aria-label="Lukk detaljer">×</button>
+        <div class="detail-content">
+          <div>
+            <p class="eyebrow" id="detailCategory"></p>
+            <h2 id="detailTitle"></h2>
+            <p id="detailSummary"></p>
+
+            <h3>Flow-oppsett</h3>
+            <div class="flow-diagram" id="detailFlow" role="list"></div>
+            <div class="flow-help" id="detailFlowHelp" aria-live="polite">
+              <p class="muted">Klikk på en node for å se hjelpetekst.</p>
+            </div>
+
+            <div id="detailCodeBlock" hidden>
+              <h3>Function node</h3>
+              <div class="code-block">
+                <button class="copy" data-copy="detailCode">Kopier</button>
+                <pre><code id="detailCode"></code></pre>
+              </div>
+            </div>
+
+            <h3>Noder etter Function</h3>
+            <ul id="detailNext"></ul>
+          </div>
+
+          <div class="panel">
+            <h3>Felt som må fylles inn</h3>
+            <div id="detailFields"></div>
+            <h3>Feilsøking / vanlige feil</h3>
+            <div id="detailTroubleshoot"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Laget for Node-RED + Home Assistant. Oppdater oppskrifter i <code>web/app.js</code> for å legge til nye
+        funksjoner.
+      </p>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

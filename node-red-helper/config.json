@@ -1,0 +1,27 @@
+{
+  "name": "Node-RED Helper",
+  "version": "1.0.0",
+  "slug": "node-red-helper",
+  "description": "En enkel katalog med Node-RED oppskrifter og copy/paste-kode for Home Assistant.",
+  "url": "https://github.com/olsenfoto1/node-red-helper",
+  "startup": "services",
+  "boot": "auto",
+  "arch": [
+    "aarch64",
+    "amd64",
+    "armhf",
+    "armv7",
+    "i386"
+  ],
+  "ports": {
+    "8123/tcp": 8123
+  },
+  "ports_description": {
+    "8123/tcp": "Node-RED Helper webgrensesnitt"
+  },
+  "webui": "http://[HOST]:[PORT:8123]/",
+  "panel_icon": "mdi:robot",
+  "ingress": false,
+  "options": {},
+  "schema": {}
+}
